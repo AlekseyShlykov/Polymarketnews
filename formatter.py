@@ -20,6 +20,17 @@ def format_number(val: float | None) -> str:
         return "—"
 
 
+def format_hourly_no_signal() -> str:
+    """Message when no market passed thresholds this hour."""
+    now = datetime.now(timezone.utc)
+    date_str = now.strftime("%Y-%m-%d")
+    time_str = now.strftime("%H:%M UTC")
+    return (
+        f"Polymarket Hourly — {date_str} {time_str}\n\n"
+        "Nothing caught our attention this hour. No market passed the signal thresholds."
+    )
+
+
 def format_hourly_post(signal: dict) -> str:
     """Single hourly signal: headline, question, odds move, volume move, liquidity, why it matters, link."""
     q = (signal.get("question") or "Unknown").strip()

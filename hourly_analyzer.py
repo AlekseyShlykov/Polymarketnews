@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 MIN_LIQ = config.MIN_LIQUIDITY_HOURLY
 VOL_CHANGE = config.HOURLY_COMBINED_VOLUME_CHANGE
 ABS_DELTA = config.HOURLY_COMBINED_ABS_DELTA_PP
+ABS_DELTA_24H = config.HOURLY_LARGE_PROB_MIN_PP_24H
 VOL_SPIKE_MIN = config.HOURLY_VOLUME_SPIKE_MIN_USD
 NEW_AGE_HOURS = config.HOURLY_NEW_MARKET_AGE_HOURS
 NEW_DAILY_VOL = config.HOURLY_NEW_MARKET_DAILY_VOLUME
@@ -59,12 +60,15 @@ def _classify_signal(
     hourly_volume_usd: float,
     volume_24h: float,
     market_age_hours: float | None,
+    delta_24h: float | None = None,
 ) -> tuple[bool, bool, bool, bool]:
     """Returns (combined, large_prob, volume_spike, new_hot)."""
     abs_delta = abs(probability_delta_1h or 0)
     vol_ch = volume_change_1h or 0
     combined = vol_ch >= VOL_CHANGE and abs_delta >= ABS_DELTA
-    large_prob = abs_delta >= ABS_DELTA
+    large_prob = abs_delta >= ABS_DELTA or (
+        delta_24h is not None and abs(float(delta_24h)) >= ABS_DELTA_24H
+    )
     volume_spike = vol_ch >= VOL_CHANGE and hourly_volume_usd >= VOL_SPIKE_MIN
     new_hot = (
         (market_age_hours is not None and market_age_hours < NEW_AGE_HOURS)
@@ -121,14 +125,19 @@ def pick_best_hourly_signal() -> tuple[dict | None, dict]:
 
     volume_updates = {}
     candidates = []
+    n_liq = 0
+    n_cooldown = 0
+    n_no_qualify = 0
     for m in markets:
         liq = _safe_float(m.get("liquidity"))
         if liq < MIN_LIQ:
             continue
+        n_liq += 1
         condition_id = (m.get("condition_id") or m.get("slug") or "").strip()
         if not condition_id:
             continue
         if is_on_cooldown(condition_id, state):
+            n_cooldown += 1
             continue
         volume_24h = _safe_float(m.get("volume_24h") or m.get("volume"))
         prev_vol = get_previous_volume(condition_id, state)
@@ -138,12 +147,27 @@ def pick_best_hourly_signal() -> tuple[dict | None, dict]:
         prob_delta_1h = m.get("probability_delta_1h")
         if prob_delta_1h is not None:
             prob_delta_1h = float(prob_delta_1h)
+        # If API has no 1h change, use 24h/24 as proxy so "large prob" can still fire
+        if prob_delta_1h is None:
+            delta_24h = m.get("delta_24h")
+            if delta_24h is not None:
+                try:
+                    prob_delta_1h = float(delta_24h) / 24.0
+                except (TypeError, ValueError):
+                    pass
         hourly_vol = _hourly_volume_usd(volume_24h)
         age_hours = _market_age_hours(m.get("created_at_timestamp"))
+        delta_24h_val = m.get("delta_24h")
+        if delta_24h_val is not None:
+            try:
+                delta_24h_val = float(delta_24h_val)
+            except (TypeError, ValueError):
+                delta_24h_val = None
         combined, large_prob, volume_spike, new_hot = _classify_signal(
-            prob_delta_1h, volume_change_1h, hourly_vol, volume_24h, age_hours
+            prob_delta_1h, volume_change_1h, hourly_vol, volume_24h, age_hours, delta_24h=delta_24h_val
         )
         if not (combined or large_prob or volume_spike or new_hot):
+            n_no_qualify += 1
             continue
         vol_growth_pct = 0.0
         if prev_vol and prev_vol > 0 and volume_change_1h is not None:
@@ -171,6 +195,10 @@ def pick_best_hourly_signal() -> tuple[dict | None, dict]:
             "volume_spike": volume_spike,
             "new_hot": new_hot,
         })
+    logger.info(
+        "Hourly scan: %s markets, %s with liquidity>=%s, %s on cooldown, %s candidates",
+        len(markets), n_liq, int(MIN_LIQ), n_cooldown, len(candidates),
+    )
     if not candidates:
         state = update_market_volumes(state, volume_updates)
         return None, state

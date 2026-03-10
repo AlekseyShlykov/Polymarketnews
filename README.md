@@ -93,6 +93,14 @@ python main_daily.py    # daily digest (e.g. after 18:00 UTC)
 - Step 2: If UTC hour is **18**, run **main_daily.py**.
 - Step 3: Commit and push **state.json** and **daily_signals.json** if changed.
 
+## Why hourly posts might not appear
+
+1. **No candidate** – The bot posts only when at least one market passes thresholds. Many hours there are 0 candidates, so nothing is posted.
+2. **Check the run log** – In Actions, open the latest "Polymarket bot" run and the "Run hourly signal" step. Look for a line like: `Hourly scan: 150 markets, 45 with liquidity>=5000, 0 on cooldown, 2 candidates`. If the last number is 0, no post was sent.
+3. **Secrets** – Ensure `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set in Settings → Secrets and variables → Actions. Wrong or missing secrets prevent sending.
+4. **Workflow permissions** – In Settings → Actions → General, set "Workflow permissions" to "Read and write" so the job can push state files (otherwise the step may fail after sending).
+5. **Manual test** – In Actions, open "Polymarket bot" and click "Run workflow" to run once and see the log.
+
 ## Env vars
 
 Only two are required (in `.env` or GitHub Secrets):
