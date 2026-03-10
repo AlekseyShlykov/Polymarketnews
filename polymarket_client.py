@@ -118,14 +118,35 @@ def event_to_markets(event: dict) -> list[dict]:
         # 24h change in probability (Gamma field; in 0-1 scale, e.g. -0.01 = -1 pp)
         one_day = _safe_float(m.get("oneDayPriceChange"))
         delta_24h = (one_day * 100) if one_day is not None else None
+        # 1h change for hourly mode (Gamma: oneHourPriceChange in 0-1)
+        one_hour = _safe_float(m.get("oneHourPriceChange"))
+        probability_delta_1h = (one_hour * 100) if one_hour is not None else None
+        volume_24h = _safe_float(m.get("volume24hr") or m.get("volume24hrClob"), 0) or 0
+        condition_id = _safe_str(m.get("conditionId") or m.get("id"))
+        # Market age: createdAt or startDate
+        created_raw = m.get("createdAt") or m.get("startDate") or event.get("createdAt") or event.get("startDate")
+        created_ts = None
+        if created_raw:
+            try:
+                from datetime import datetime as dt, timezone as tz
+                if isinstance(created_raw, (int, float)):
+                    created_ts = created_raw / 1000 if created_raw > 1e12 else created_raw
+                else:
+                    created_ts = dt.fromisoformat(str(created_raw).replace("Z", "+00:00")).timestamp()
+            except (ValueError, TypeError, OSError):
+                pass
         out.append({
             "question": question or "Unknown",
             "slug": slug,
+            "condition_id": condition_id,
             "liquidity": liquidity,
             "volume": volume,
+            "volume_24h": volume_24h,
             "current_probability": round(current_price * 100, 1),
             "previous_probability": round((current_price - (one_day or 0)) * 100, 1) if one_day is not None else None,
             "delta_24h": round(delta_24h, 1) if delta_24h is not None else None,
+            "probability_delta_1h": round(probability_delta_1h, 1) if probability_delta_1h is not None else None,
+            "created_at_timestamp": created_ts,
         })
     return out
 

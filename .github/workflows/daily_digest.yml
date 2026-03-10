@@ -1,14 +1,17 @@
-# Run daily digest once per day; also allow manual trigger.
-name: Daily digest
+# Hourly signal + daily digest at 18:00 UTC.
+# Runs every hour; at 18:00 UTC also sends the daily digest.
+name: Polymarket bot
 
 on:
   schedule:
-    - cron: "0 12 * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 jobs:
-  digest:
+  run:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -20,8 +23,31 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run daily digest
+      - name: Set UTC hour
+        id: utc
+        run: echo "hour=$(date -u +%H)" >> $GITHUB_OUTPUT
+
+      - name: Run hourly signal
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python main.py
+        run: python main_hourly.py
+
+      - name: Run daily digest (18:00 UTC only)
+        if: steps.utc.outputs.hour == '18'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python main_daily.py
+
+      - name: Persist state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state.json daily_signals.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No state changes to commit"
+          else
+            git commit -m "chore: persist bot state"
+            git push
+          fi
