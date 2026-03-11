@@ -15,5 +15,22 @@
     "score": 126.8891,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x94123b93487bc2aa3b1b247dfd629364ff1c209bce78a5f64fbf8c1d87297c33",
+    "question": "Will the Vancouver Canucks win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-vancouver-canucks-win-the-2026-nhl-stanley-cup",
+    "liquidity": 138719.83413,
+    "volume_24h": 44226.643,
+    "current_probability": 0.2,
+    "previous_probability": 0.1,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 106.0925113866251,
+    "score": 90.2813,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
