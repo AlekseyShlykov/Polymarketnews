@@ -84,5 +84,22 @@
     "score": 82.9834,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xb87df3ecfdb937e0d5bd495d7cc7e88062097616e0c59ce478e101eff5020eb7",
+    "question": "Starmer out by March 31, 2026?",
+    "slug": "starmer-out-by-march-31-2026",
+    "liquidity": 21297.75969,
+    "volume_24h": 23515.431106000004,
+    "current_probability": 4.7,
+    "previous_probability": 5.7,
+    "probability_delta_1h": -0.041666666666666664,
+    "delta_24h": -1.0,
+    "delta_6h": -0.25,
+    "delta_3h": -0.125,
+    "volume_change_6h_pct": 75.82954871280695,
+    "score": 79.5482,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
