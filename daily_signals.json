@@ -33,5 +33,22 @@
     "score": 54.1332,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0xc58cfb7397c4f3f803f5c20135cafa7f6d2c87cf3bb1e6138042b95d828e1866",
+    "question": "Will the Charlotte Hornets win the 2026 NBA Finals?",
+    "slug": "will-the-charlotte-hornets-win-the-2026-nba-finals",
+    "liquidity": 437888.4842,
+    "volume_24h": 1520155.2826349994,
+    "current_probability": 0.9,
+    "previous_probability": 0.8,
+    "probability_delta_1h": 0.1,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": null,
+    "score": 3.5611,
+    "signal_type": "trending",
+    "why_matters": "This was one of the most actively traded markets of the day."
   }
 ]
