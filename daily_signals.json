@@ -135,5 +135,22 @@
     "score": 3.1182,
     "signal_type": "trending",
     "why_matters": "This was one of the most actively traded markets of the day."
+  },
+  {
+    "condition_id": "0x30a8ed0d01b7e8b25334358f71d9ec71c147783c0f908c2e7c7a527905007bf8",
+    "question": "Will the Washington Wizards win the 2026 NBA Finals?",
+    "slug": "will-the-washington-wizards-win-the-2026-nba-finals",
+    "liquidity": 1521940.95524,
+    "volume_24h": 13195.37,
+    "current_probability": 0.1,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 332.1420150123794,
+    "score": 180.2287,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
