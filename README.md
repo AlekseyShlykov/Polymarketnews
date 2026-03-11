@@ -48,26 +48,30 @@ python main_daily.py    # daily digest (e.g. after 18:00 UTC)
 - **Schedule**: Runs once per hour (e.g. cron `0 * * * *`).
 - **Data**: Fetches markets from Gamma (with `oneHourPriceChange`, `volume24hr`, liquidity, etc.). Uses **state** to get previous run’s `volume24hr` per market so it can compute `volume_change_1h` (current volume24hr − previous).
 - **Eligibility**: A market is a candidate only if:
-  - `liquidity >= 5000`
-  - Not on **12h cooldown** (same market not posted in last 12 hours)
-  - Passes at least one of:
-    - **Combined**: `volume_change_1h >= 100` and `abs(probability_delta_1h) >= 20`
-    - **Large probability move**: `abs(probability_delta_1h) >= 20`
-    - **Volume spike**: `volume_change_1h >= 100` and `hourly_volume_usd >= 2000` (hourly_volume_usd = volume24hr/24)
-    - **New hot market**: market age &lt; 24h and daily volume ≥ 10000
+  - `liquidity >= 1000` (MIN_LIQUIDITY_HOURLY)
+  - Not on **12h cooldown**
+  - Qualifies for at least one **editorial signal type**:
+    - **Market shock**: `abs(delta_3h) >= 15` OR `abs(delta_6h) >= 20` (deltas approximated from Gamma’s 24h when needed)
+    - **Market disagreement**: `volume_change_6h >= 70%`, `abs(delta_6h) < 3`, `volume_24h >= 10000`
+    - **Market trend**: `abs(delta_24h) >= 10` and not a shock
+    - **Activity spike**: `volume_change_6h >= 70%`, `volume_24h >= 5000`
+    - **Trending**: fallback (highest volume) when no other type qualifies
 - **Scoring**:  
-  `score = 50*combined + 2*|probability_delta_1h| + 0.8*volume_growth_% + 0.2*log(hourly_volume_usd+1) + 0.1*log(liquidity_usd+1)`  
-  The **highest-scoring** candidate is chosen.
-- **Post**: If there is a candidate, one Telegram post is sent (headline, question, odds move, volume move, liquidity, templated “why it matters”, optional link). That market is recorded in **state** (cooldown) and the signal is appended to **daily_signals.json** for the digest.
-- **No post**: If no market passes, nothing is sent; state is still updated (e.g. `market_volumes`) for the next hour.
+  `60*shock + 45*disagreement + 35*trend + 2*|delta_6h| + 1.2*|delta_24h| + 0.4*vol_change_6h + 0.25*log(volume_24h+1)`  
+  Hourly selection **priority**: shock → disagreement → trend → activity spike → trending; then by score.
+- **Post**: One Telegram post per hour (format depends on signal type: shock, trend, disagreement, activity spike, or trending). That market is recorded for cooldown and the signal is appended to **daily_signals.json**.
+- **No post**: If no market passes, nothing is sent; state is still updated (e.g. `market_volumes`, `volume_snapshots`) for the next hour.
+- **Data approximations**: Gamma API provides 1h and 24h price change. We approximate `delta_3h = delta_24h * (3/24)` and `delta_6h = delta_24h * (6/24)`. `volume_change_6h` uses stored **volume_snapshots** in state (one snapshot per run, last 8 hours).
 
 ## How the 18:00 UTC digest works
 
 - **Schedule**: The same workflow runs every hour; when the current UTC hour is **18**, it runs `main_daily.py` after `main_hourly.py`.
 - **Input**: Reads **daily_signals.json** (signals added by hourly runs during the day).
-- **Processing**: Deduplicates by `condition_id` (keeps the highest score per market), sorts by score descending, takes **top 6**.
-- **Message**: One Telegram message: “Polymarket Daily Digest — YYYY-MM-DD — 18:00 UTC” and for each of the 6: question, odds change, volume change if present, and one templated “why it matters” line.
-- **Reset**: After sending, **daily_signals.json** is cleared so the next day starts with an empty pool.
+- **Structure**:
+  1. **Top moves today** — Up to 5 markets with the largest absolute 24h probability move (deduped by market, ranked by `|delta_24h|`).
+  2. **Top 6 signals of the day** — Deduplicated by `condition_id` (keep highest score), sorted by score, each with question, odds change, **signal category** (e.g. Market shock, Market trend), and a short “Why it matters” line.
+- **Message**: One Telegram message: “Polymarket Daily Digest — YYYY-MM-DD”, then the two sections above.
+- **Reset**: After sending, **daily_signals.json** is cleared for the next day.
 
 ## How cooldown works
 

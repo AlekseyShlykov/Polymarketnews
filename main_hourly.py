@@ -12,7 +12,7 @@ if __name__ == "__main__":
         sys.path.insert(0, str(_root))
 
 import config
-from formatter import format_hourly_post, format_hourly_no_signal
+from formatter import format_hourly_post
 from hourly_analyzer import pick_best_hourly_signal
 from state import (
     add_daily_signal,
@@ -62,11 +62,7 @@ def main() -> None:
         save_daily_signals(daily)
         logger.info("Signal posted and added to daily digest pool.")
     else:
-        text = format_hourly_no_signal()
-        logger.info("No signal passed thresholds; posting fallback message.")
-        if not send_telegram(text):
-            logger.error("Telegram send failed")
-            sys.exit(1)
+        logger.info("No signal passed thresholds; posting nothing.")
 
     save_state(state)
     logger.info("Hourly run done.")

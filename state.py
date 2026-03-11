@@ -133,6 +133,55 @@ def update_market_volumes(state: dict, updates: dict[str, float]) -> dict:
     return state
 
 
+def append_volume_snapshot(state: dict, volumes: dict[str, float]) -> dict:
+    """Append current run's volume24hr snapshot for 6h change later. Keep last 8 hours."""
+    state = dict(state)
+    snapshots = list(state.get("volume_snapshots") or [])
+    snapshots.append({"at": _now_utc().isoformat(), "volumes": {k: float(v) for k, v in volumes.items() if k and v is not None}})
+    cutoff = _now_utc() - timedelta(hours=8)
+    def _parsed(t):
+        try:
+            dt = datetime.fromisoformat(t.replace("Z", "+00:00"))
+            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError, AttributeError):
+            return None
+    snapshots = [s for s in snapshots if isinstance(s, dict) and s.get("at") and _parsed(s.get("at", "")) and _parsed(s["at"]) > cutoff]
+    state["volume_snapshots"] = snapshots
+    return state
+
+
+def get_volume_6h_ago(condition_id: str, state: dict) -> float | None:
+    """Volume24hr for this market from snapshot closest to 6h ago. For volume_change_6h%."""
+    snapshots = state.get("volume_snapshots") or []
+    if not isinstance(snapshots, list) or len(snapshots) < 2:
+        return None
+    now = _now_utc()
+    target = now - timedelta(hours=6)
+    best = None
+    best_diff = None
+    for s in snapshots:
+        if not isinstance(s, dict):
+            continue
+        at_str = s.get("at")
+        vols = s.get("volumes") or {}
+        if not at_str or condition_id not in vols:
+            continue
+        try:
+            at = datetime.fromisoformat(at_str.replace("Z", "+00:00"))
+            if at.tzinfo is None:
+                at = at.replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError):
+            continue
+        diff = abs((at - target).total_seconds())
+        if best_diff is None or diff < best_diff:
+            best_diff = diff
+            try:
+                best = float(vols[condition_id])
+            except (TypeError, ValueError):
+                best = None
+    return best
+
+
 def add_daily_signal(signal: dict, daily_signals: list) -> list:
     """Append one signal (from hourly run). Dedupe by condition_id kept for daily digest step."""
     out = list(daily_signals)
@@ -153,6 +202,31 @@ def get_daily_signals_for_digest(daily_signals: list, max_items: int = 6) -> lis
         if cid not in by_cid or float(by_cid[cid].get("score") or 0) < score:
             by_cid[cid] = s
     ranked = sorted(by_cid.values(), key=lambda x: -(float(x.get("score") or 0)))
+    return ranked[:max_items]
+
+
+def get_top_moves_for_digest(daily_signals: list, max_items: int = 5) -> list[dict]:
+    """Top markets by absolute 24h probability move for 'Top moves today' section. Dedupe by condition_id (keep max |delta_24h|)."""
+    by_cid: dict[str, dict] = {}
+    for s in daily_signals:
+        if not isinstance(s, dict):
+            continue
+        cid = s.get("condition_id") or s.get("slug") or ""
+        if not cid:
+            continue
+        d = s.get("delta_24h")
+        abs_d = abs(float(d)) if d is not None else 0
+        if cid not in by_cid:
+            by_cid[cid] = s
+        else:
+            existing_d = by_cid[cid].get("delta_24h")
+            existing_abs = abs(float(existing_d)) if existing_d is not None else 0
+            if abs_d > existing_abs:
+                by_cid[cid] = s
+    ranked = sorted(
+        by_cid.values(),
+        key=lambda x: -(abs(float(x.get("delta_24h") or 0))),
+    )
     return ranked[:max_items]
 
 

@@ -1,6 +1,6 @@
 """
-Format analyzer output as a concise Telegram digest (template-based).
-Handles fallback when there are no strong signals.
+Format analyzer output as short news-style Telegram posts.
+Never post empty or "nothing happened" messages — no-signal case is handled by not sending.
 """
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 
 def format_number(val: float | None) -> str:
-    """Format for display; avoid long decimals."""
+    """Display number; avoid long decimals."""
     if val is None:
         return "—"
     try:
@@ -20,40 +20,35 @@ def format_number(val: float | None) -> str:
         return "—"
 
 
-def format_hourly_no_signal() -> str:
-    """Message when no market passed thresholds this hour."""
-    now = datetime.now(timezone.utc)
-    date_str = now.strftime("%Y-%m-%d")
-    time_str = now.strftime("%H:%M UTC")
-    return (
-        f"Polymarket Hourly — {date_str} {time_str}\n\n"
-        "Nothing caught our attention this hour. No market passed the signal thresholds."
-    )
+def _market_url(slug: str) -> str:
+    return f"https://polymarket.com/event/{slug}" if (slug or "").strip() else ""
 
 
-def format_hourly_post(signal: dict) -> str:
-    """Single hourly signal: headline, question, odds move, volume move, liquidity, why it matters, link."""
+def format_hourly_market_shock(signal: dict) -> str:
+    """Market shock — very sharp repricing in short period."""
     q = (signal.get("question") or "Unknown").strip()
+    old_p = format_number(signal.get("previous_probability"))
     new_p = format_number(signal.get("current_probability"))
-    prev_p = format_number(signal.get("previous_probability"))
-    delta = signal.get("probability_delta_1h")
-    delta_str = f"{prev_p}% → {new_p}% ({delta:+.1f} pp)" if delta is not None else f"{prev_p}% → {new_p}%"
-    vol_ch = signal.get("volume_change_1h")
-    vol_str = format_number(vol_ch) if vol_ch is not None else "—"
+    delta_6h = signal.get("delta_6h")
+    delta_3h = signal.get("delta_3h")
+    delta = delta_6h if delta_6h is not None else delta_3h
+    if delta is None:
+        delta = signal.get("delta_24h")
+    delta_str = f" ({delta:+.1f} pp)" if delta is not None else ""
     liq = format_number(signal.get("liquidity"))
-    why = signal.get("why_matters") or "Why this matters: notable move this hour."
-    slug = (signal.get("slug") or "").strip()
-    link = f"https://polymarket.com/event/{slug}" if slug else ""
+    vol = format_number(signal.get("volume_24h"))
+    link = _market_url(signal.get("slug") or "")
     lines = [
-        "🔔 Polymarket Hourly Signal",
+        "🚨 Market shock",
         "",
         q,
         "",
-        f"Odds: {delta_str}",
-        f"Volume change (24h delta): {vol_str}",
-        f"Liquidity: {liq}",
+        f"Odds moved: {old_p}% → {new_p}%{delta_str}",
         "",
-        why,
+        "A rapid repricing suggests traders are reacting strongly to new information.",
+        "",
+        f"Liquidity: ${liq}",
+        f"24h volume: ${vol}",
     ]
     if link:
         lines.append("")
@@ -61,38 +56,213 @@ def format_hourly_post(signal: dict) -> str:
     return "\n".join(lines).strip()
 
 
-def format_daily_digest(signals: list[dict], date_str: str | None = None) -> str:
-    """Daily digest at 18:00 UTC: top 6 with question, odds change, volume if relevant, why it matters."""
+def format_hourly_market_trend(signal: dict) -> str:
+    """Market trend — steady move over 24h."""
+    q = (signal.get("question") or "Unknown").strip()
+    old_p = format_number(signal.get("previous_probability"))
+    new_p = format_number(signal.get("current_probability"))
+    delta = signal.get("delta_24h")
+    delta_str = f" ({delta:+.1f} pp) over 24h" if delta is not None else " over 24h"
+    liq = format_number(signal.get("liquidity"))
+    vol = format_number(signal.get("volume_24h"))
+    link = _market_url(signal.get("slug") or "")
+    lines = [
+        "📈 Market trend",
+        "",
+        q,
+        "",
+        f"Odds moved: {old_p}% → {new_p}%{delta_str}",
+        "",
+        "The market has been steadily repricing expectations over the last day.",
+        "",
+        f"Liquidity: ${liq}",
+        f"24h volume: ${vol}",
+    ]
+    if link:
+        lines.append("")
+        lines.append(link)
+    return "\n".join(lines).strip()
+
+
+def format_hourly_market_disagreement(signal: dict) -> str:
+    """Market disagreement — heavy trading, little price move."""
+    q = (signal.get("question") or "Unknown").strip()
+    old_p = format_number(signal.get("previous_probability"))
+    new_p = format_number(signal.get("current_probability"))
+    delta_6h = signal.get("delta_6h")
+    delta_str = f" ({delta_6h:+.1f} pp)" if delta_6h is not None else ""
+    vol = format_number(signal.get("volume_24h"))
+    link = _market_url(signal.get("slug") or "")
+    lines = [
+        "⚖️ Market disagreement",
+        "",
+        q,
+        "",
+        f"24h volume: ${vol}",
+        "",
+        f"Despite strong trading activity, odds barely moved: {old_p}% → {new_p}%{delta_str}",
+        "",
+        "This suggests the market is active but divided.",
+    ]
+    if link:
+        lines.append("")
+        lines.append(link)
+    return "\n".join(lines).strip()
+
+
+def format_hourly_repricing(signal: dict) -> str:
+    """News-style: market repricing — odds moved sharply."""
+    q = (signal.get("question") or "Unknown").strip()
+    old_p = format_number(signal.get("previous_probability"))
+    new_p = format_number(signal.get("current_probability"))
+    delta_6h = signal.get("delta_6h")
+    delta_24h = signal.get("delta_24h")
+    delta = delta_6h if delta_6h is not None else delta_24h
+    delta_str = f" ({delta:+.1f} pp)" if delta is not None else ""
+    liq = format_number(signal.get("liquidity"))
+    link = _market_url(signal.get("slug") or "")
+    lines = [
+        "🚨 Market repricing",
+        "",
+        q,
+        "",
+        f"Odds moved: {old_p}% → {new_p}%{delta_str}",
+        "",
+        "The market sharply repriced expectations.",
+        "",
+        f"Liquidity: ${liq}",
+    ]
+    if link:
+        lines.append("")
+        lines.append(link)
+    return "\n".join(lines).strip()
+
+
+def format_hourly_activity_spike(signal: dict) -> str:
+    """News-style: activity spike — trading jumped."""
+    q = (signal.get("question") or "Unknown").strip()
+    old_p = format_number(signal.get("previous_probability"))
+    new_p = format_number(signal.get("current_probability"))
+    vol = format_number(signal.get("volume_24h"))
+    link = _market_url(signal.get("slug") or "")
+    lines = [
+        "📈 Activity spike",
+        "",
+        q,
+        "",
+        f"Odds: {old_p}% → {new_p}%",
+        "",
+        "Trading activity jumped sharply as traders reposition.",
+        "",
+        f"24h volume: ${vol}",
+    ]
+    if link:
+        lines.append("")
+        lines.append(link)
+    return "\n".join(lines).strip()
+
+
+def format_hourly_trending(signal: dict) -> str:
+    """News-style: most active market today."""
+    q = (signal.get("question") or "Unknown").strip()
+    p = format_number(signal.get("current_probability"))
+    vol = format_number(signal.get("volume_24h"))
+    liq = format_number(signal.get("liquidity"))
+    link = _market_url(signal.get("slug") or "")
+    lines = [
+        "🔥 Most active market today",
+        "",
+        q,
+        "",
+        f"Odds: {p}%",
+        "",
+        f"24h volume: ${vol}",
+        f"Liquidity: ${liq}",
+    ]
+    if link:
+        lines.append("")
+        lines.append(link)
+    return "\n".join(lines).strip()
+
+
+def format_hourly_post(signal: dict) -> str:
+    """Single hourly post: dispatch by signal_type (shock, disagreement, trend, activity_spike, trending)."""
+    st = (signal.get("signal_type") or "trending").strip().lower()
+    if st == "market_shock":
+        return format_hourly_market_shock(signal)
+    if st == "market_disagreement":
+        return format_hourly_market_disagreement(signal)
+    if st == "market_trend":
+        return format_hourly_market_trend(signal)
+    if st == "activity_spike":
+        return format_hourly_activity_spike(signal)
+    return format_hourly_trending(signal)
+
+
+def format_top_moves_section(moves: list[dict]) -> str:
+    """Top moves today: numbered list by absolute delta."""
+    if not moves:
+        return ""
+    lines = ["Top moves today", ""]
+    for i, row in enumerate(moves, 1):
+        q = (row.get("question") or "Unknown").strip()
+        delta = row.get("delta_24h")
+        if delta is not None:
+            lines.append(f"{i}. {q} — {delta:+.1f} pp")
+        else:
+            lines.append(f"{i}. {q}")
+    return "\n".join(lines)
+
+
+def format_daily_digest(
+    top_moves: list[dict],
+    top_signals: list[dict],
+    date_str: str | None = None,
+) -> str:
+    """Daily digest at 18:00 UTC: 1) Top moves today (by |delta|), 2) Top 6 signals with category and Why it matters."""
     if date_str is None:
         date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    if not signals:
-        return (
-            f"Polymarket Daily Digest — {date_str} — 18:00 UTC\n\n"
-            "No signals met the threshold for the last 24 hours."
-        )
-    lines = [f"Polymarket Daily Digest — {date_str} — 18:00 UTC\n"]
-    for i, row in enumerate(signals, 1):
-        q = (row.get("question") or "Unknown").strip()
-        new_p = format_number(row.get("current_probability"))
-        prev_p = format_number(row.get("previous_probability"))
-        delta_24 = row.get("delta_24h")
-        delta_1h = row.get("probability_delta_1h")
-        delta = delta_24 if delta_24 is not None else delta_1h
-        delta_str = f" ({delta:+.1f} pp)" if delta is not None else ""
-        odds_str = f"{prev_p}% → {new_p}%{delta_str}"
-        vol_ch = row.get("volume_change_1h")
-        vol_str = f" | Vol Δ: {format_number(vol_ch)}" if vol_ch is not None else ""
-        why = row.get("why_matters") or "Why it matters: strong move in the last 24h."
-        lines.append(f"{i}. {q}")
-        lines.append(f"   {odds_str}{vol_str}")
-        lines.append(f"   {why}\n")
+    lines = [
+        f"Polymarket Daily Digest — {date_str}",
+        "",
+    ]
+    # Section 1: Biggest moves (top 5 by absolute delta)
+    if top_moves:
+        lines.append("1. Biggest prediction market moves today")
+        lines.append("")
+        lines.append(format_top_moves_section(top_moves))
+        lines.append("")
+        lines.append("")
+    # Section 2: Top 6 signals with category and why it matters
+    lines.append("2. Top 6 signals of the day")
+    lines.append("")
+    if not top_signals:
+        lines.append("No signals met the threshold for the last 24 hours.")
+    else:
+        for i, row in enumerate(top_signals[:6], 1):
+            q = (row.get("question") or "Unknown").strip()
+            old_p = format_number(row.get("previous_probability"))
+            new_p = format_number(row.get("current_probability"))
+            delta_24h = row.get("delta_24h")
+            delta_6h = row.get("delta_6h")
+            delta = delta_24h if delta_24h is not None else delta_6h
+            delta_str = f" ({delta:+.1f} pp)" if delta is not None else ""
+            why = row.get("why_matters") or "Notable move in prediction markets."
+            category = (row.get("signal_type") or "signal").replace("_", " ").title()
+            lines.append(f"{i}️⃣ {q}")
+            lines.append("")
+            lines.append(f"Odds: {old_p}% → {new_p}%{delta_str}")
+            lines.append(f"[{category}]")
+            lines.append(f"Why it matters: {why}")
+            if i < min(6, len(top_signals)):
+                lines.append("")
+                lines.append("---")
+                lines.append("")
     return "\n".join(lines).strip()
 
 
 def format_digest(items: list[dict], use_fallback: bool = False) -> str:
-    """
-    Build digest text. If use_fallback or items empty, return fallback message.
-    """
+    """Legacy: build digest text; if use_fallback or items empty, return fallback message."""
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     if use_fallback or not items:
         return (
@@ -107,7 +277,7 @@ def format_digest(items: list[dict], use_fallback: bool = False) -> str:
         delta = row.get("delta_24h")
         delta_str = f" ({delta:+.1f} pp)" if delta is not None else ""
         liq = format_number(row.get("liquidity"))
-        vol = format_number(row.get("volume"))
+        vol = format_number(row.get("volume_24h") or row.get("volume"))
         lines.append(f"{i}. {q}")
         lines.append(f"{old_p}% → {new_p}%{delta_str}")
         lines.append(f"Liquidity: {liq}  Volume: {vol}\n")

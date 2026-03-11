@@ -1,19 +1,30 @@
 """
-Hourly mode: pick exactly 1 best signal per run using score and thresholds.
-Uses: combined signal, large prob move, volume spike, new hot market.
-Enforces: liquidity >= 5000, 12h cooldown per market.
+Hourly mode: pick exactly 1 best signal per run for a prediction-market news bot.
+
+Editorial signal types (priority order for selection):
+1) Market shock — very sharp repricing: |delta_3h| >= 15 OR |delta_6h| >= 20.
+2) Market disagreement — heavy trading, little move: vol_change_6h >= 70%, |delta_6h| < 3, vol_24h >= 10k.
+3) Market trend — steady 24h move: |delta_24h| >= 10 and NOT shock.
+4) Activity spike — volume jumped: vol_change_6h >= 70%, vol_24h >= 5k.
+5) Trending — fallback: highest daily volume.
+
+Deltas: Gamma API has 1h and 24h. We approximate delta_3h = delta_24h * (3/24), delta_6h = delta_24h * (6/24).
+Volume change over 6h uses state volume_snapshots (stored each run).
+
+Score: 60*shock + 45*disagreement + 35*trend + 2*|delta_6h| + 1.2*|delta_24h| + 0.4*vol_change_6h + 0.25*log(vol_24h+1).
+Only one post per hour; if no signal passes thresholds we post nothing.
 """
 from __future__ import annotations
 
 import logging
 import math
-from datetime import datetime, timezone
 from typing import Any
 
 import config
 from polymarket_client import fetch_all_markets
 from state import (
-    get_previous_volume,
+    append_volume_snapshot,
+    get_volume_6h_ago,
     is_on_cooldown,
     load_state,
     update_market_volumes,
@@ -22,12 +33,23 @@ from state import (
 logger = logging.getLogger(__name__)
 
 MIN_LIQ = config.MIN_LIQUIDITY_HOURLY
-VOL_CHANGE = config.HOURLY_COMBINED_VOLUME_CHANGE
-ABS_DELTA = config.HOURLY_COMBINED_ABS_DELTA_PP
-ABS_DELTA_24H = config.HOURLY_LARGE_PROB_MIN_PP_24H
-VOL_SPIKE_MIN = config.HOURLY_VOLUME_SPIKE_MIN_USD
-NEW_AGE_HOURS = config.HOURLY_NEW_MARKET_AGE_HOURS
-NEW_DAILY_VOL = config.HOURLY_NEW_MARKET_DAILY_VOLUME
+SHOCK_3H = config.MARKET_SHOCK_MIN_DELTA_3H_PP
+SHOCK_6H = config.MARKET_SHOCK_MIN_DELTA_6H_PP
+TREND_24H = config.MARKET_TREND_MIN_DELTA_24H_PP
+DISCORD_VOL_PCT = config.MARKET_DISAGREEMENT_VOL_CHANGE_6H_PCT
+DISCORD_MAX_DELTA_6H = config.MARKET_DISAGREEMENT_MAX_ABS_DELTA_6H_PP
+DISCORD_MIN_VOL = config.MARKET_DISAGREEMENT_MIN_DAILY_VOLUME
+ACTIVITY_VOL_PCT = config.ACTIVITY_SPIKE_MIN_VOLUME_CHANGE_6H_PCT
+ACTIVITY_MIN_VOL = config.ACTIVITY_SPIKE_MIN_DAILY_VOLUME
+
+# Priority order for hourly selection (lower = higher priority)
+_SIGNAL_PRIORITY = {
+    "market_shock": 0,
+    "market_disagreement": 1,
+    "market_trend": 2,
+    "activity_spike": 3,
+    "trending": 4,
+}
 
 
 def _safe_float(val: Any, default: float = 0) -> float:
@@ -39,83 +61,112 @@ def _safe_float(val: Any, default: float = 0) -> float:
         return default
 
 
-def _market_age_hours(created_ts: float | None) -> float | None:
-    if created_ts is None:
-        return None
-    try:
-        delta = datetime.now(timezone.utc).timestamp() - created_ts
-        return delta / 3600.0
-    except (TypeError, ValueError):
-        return None
+def _delta_3h_proxy(delta_24h: float | None) -> float:
+    """API has no 3h field; approximate from 24h: delta_3h = delta_24h * (3/24)."""
+    if delta_24h is None:
+        return 0.0
+    return float(delta_24h) * (3.0 / 24.0)
 
 
-def _hourly_volume_usd(volume_24h: float) -> float:
-    """Approximate hourly volume from 24h."""
-    return volume_24h / 24.0 if volume_24h else 0
+def _delta_6h_proxy(delta_24h: float | None) -> float:
+    """API has no 6h field; approximate from 24h: delta_6h = delta_24h * (6/24)."""
+    if delta_24h is None:
+        return 0.0
+    return float(delta_24h) * (6.0 / 24.0)
 
 
-def _classify_signal(
-    probability_delta_1h: float | None,
-    volume_change_1h: float | None,
-    hourly_volume_usd: float,
+def _is_market_shock(abs_delta_3h: float, abs_delta_6h: float) -> bool:
+    return abs_delta_3h >= SHOCK_3H or abs_delta_6h >= SHOCK_6H
+
+
+def _is_market_trend(abs_delta_24h: float, is_shock: bool) -> bool:
+    return abs_delta_24h >= TREND_24H and not is_shock
+
+
+def _is_market_disagreement(
+    volume_change_6h_pct: float | None,
+    abs_delta_6h: float,
     volume_24h: float,
-    market_age_hours: float | None,
-    delta_24h: float | None = None,
-) -> tuple[bool, bool, bool, bool]:
-    """Returns (combined, large_prob, volume_spike, new_hot)."""
-    abs_delta = abs(probability_delta_1h or 0)
-    vol_ch = volume_change_1h or 0
-    combined = vol_ch >= VOL_CHANGE and abs_delta >= ABS_DELTA
-    large_prob = abs_delta >= ABS_DELTA or (
-        delta_24h is not None and abs(float(delta_24h)) >= ABS_DELTA_24H
+) -> bool:
+    if volume_change_6h_pct is None:
+        return False
+    return (
+        volume_change_6h_pct >= DISCORD_VOL_PCT
+        and abs_delta_6h < DISCORD_MAX_DELTA_6H
+        and volume_24h >= DISCORD_MIN_VOL
     )
-    volume_spike = vol_ch >= VOL_CHANGE and hourly_volume_usd >= VOL_SPIKE_MIN
-    new_hot = (
-        (market_age_hours is not None and market_age_hours < NEW_AGE_HOURS)
-        and volume_24h >= NEW_DAILY_VOL
-    )
-    return combined, large_prob, volume_spike, new_hot
+
+
+def _is_activity_spike(volume_change_6h_pct: float | None, volume_24h: float) -> bool:
+    if volume_change_6h_pct is None:
+        return False
+    return volume_change_6h_pct >= ACTIVITY_VOL_PCT and volume_24h >= ACTIVITY_MIN_VOL
+
+
+def _assign_signal_type(
+    is_shock: bool,
+    is_disagreement: bool,
+    is_trend: bool,
+    is_activity: bool,
+) -> str:
+    """Return highest-priority type this market qualifies for."""
+    if is_shock:
+        return "market_shock"
+    if is_disagreement:
+        return "market_disagreement"
+    if is_trend:
+        return "market_trend"
+    if is_activity:
+        return "activity_spike"
+    return "trending"
 
 
 def _score_signal(
-    combined: bool,
-    large_prob: bool,
-    volume_spike: bool,
-    new_hot: bool,
-    probability_delta_1h: float | None,
-    volume_growth_percent: float,
-    hourly_volume_usd: float,
-    liquidity_usd: float,
+    signal_type: str,
+    delta_6h: float,
+    delta_24h: float | None,
+    volume_change_6h_pct: float,
+    volume_24h: float,
 ) -> float:
-    """score = 50*combined + 2*|delta_1h| + 0.8*vol_growth_pct + 0.2*log(hourly_vol+1) + 0.1*log(liq+1)."""
-    s = 0.0
-    if combined:
-        s += 50.0
-    s += 2.0 * abs(probability_delta_1h or 0)
-    s += 0.8 * volume_growth_percent
-    s += 0.2 * math.log(hourly_volume_usd + 1)
-    s += 0.1 * math.log(liquidity_usd + 1)
-    return s
+    """score = 60*shock + 45*disagreement + 35*trend + 2*|delta_6h| + 1.2*|delta_24h| + 0.4*vol_change_6h + 0.25*log(vol_24h+1)."""
+    base = (
+        2.0 * abs(delta_6h)
+        + 1.2 * abs(delta_24h or 0)
+        + 0.4 * (volume_change_6h_pct or 0)
+        + 0.25 * math.log(volume_24h + 1)
+    )
+    if signal_type == "market_shock":
+        return 60.0 + base
+    if signal_type == "market_disagreement":
+        return 45.0 + base
+    if signal_type == "market_trend":
+        return 35.0 + base
+    if signal_type == "activity_spike":
+        return base  # no extra flag weight
+    # trending
+    return 0.25 * math.log(volume_24h + 1) + 0.1 * abs(delta_6h)
 
 
-def _why_matters(combined: bool, large_prob: bool, volume_spike: bool, new_hot: bool, delta_1h: float | None) -> str:
-    if combined:
-        return "Why this matters: strongest combined price and activity signal in the last hour."
-    if large_prob:
-        return "Why this matters: biggest standalone probability re-pricing this hour."
-    if volume_spike:
-        return "Why this matters: largest activity spike in the last hour."
-    if new_hot:
-        return "Why this matters: fastest-rising new market."
-    if (delta_1h or 0) < 0:
-        return "Why this matters: notable downside re-pricing this hour."
-    return "Why this matters: notable probability move this hour."
+def _why_matters(signal_type: str) -> str:
+    if signal_type == "market_shock":
+        return "The market repriced sharply in a short period."
+    if signal_type == "market_disagreement":
+        return "Heavy trading activity did not resolve market disagreement."
+    if signal_type == "market_trend":
+        return "The market moved steadily over the course of the day."
+    if signal_type == "activity_spike":
+        return "Trading activity accelerated sharply."
+    if signal_type == "trending":
+        return "This was one of the most actively traded markets of the day."
+    return "Notable move in prediction markets."
 
 
 def pick_best_hourly_signal() -> tuple[dict | None, dict]:
     """
-    Fetch markets, apply thresholds and cooldown, score, return (best_signal, state_updates).
-    best_signal is None if no market passes. state_updates: { "market_volumes": { cid: volume24hr } }.
+    Fetch markets, compute deltas (1h, 3h proxy, 6h proxy, 24h) and volume_change_6h,
+    classify into shock / disagreement / trend / activity_spike / trending,
+    score, apply cooldown. Returns (best_signal, state).
+    If no market passes thresholds we post nothing.
     """
     state = load_state()
     markets = fetch_all_markets(config.MAX_MARKETS_TO_SCAN)
@@ -123,11 +174,11 @@ def pick_best_hourly_signal() -> tuple[dict | None, dict]:
         logger.warning("No markets from Polymarket")
         return None, {}
 
-    volume_updates = {}
-    candidates = []
+    volume_updates: dict[str, float] = {}
+    candidates: list[dict] = []
     n_liq = 0
     n_cooldown = 0
-    n_no_qualify = 0
+
     for m in markets:
         liq = _safe_float(m.get("liquidity"))
         if liq < MIN_LIQ:
@@ -139,69 +190,116 @@ def pick_best_hourly_signal() -> tuple[dict | None, dict]:
         if is_on_cooldown(condition_id, state):
             n_cooldown += 1
             continue
+
         volume_24h = _safe_float(m.get("volume_24h") or m.get("volume"))
-        prev_vol = get_previous_volume(condition_id, state)
-        volume_change_1h = (volume_24h - prev_vol) if prev_vol is not None else None
-        if volume_change_1h is not None:
-            volume_updates[condition_id] = volume_24h
+        volume_updates[condition_id] = volume_24h
+
+        delta_24h_raw = m.get("delta_24h")
+        delta_24h = float(delta_24h_raw) if delta_24h_raw is not None else None
+        delta_6h = _delta_6h_proxy(delta_24h)
+        delta_3h = _delta_3h_proxy(delta_24h)
         prob_delta_1h = m.get("probability_delta_1h")
-        if prob_delta_1h is not None:
-            prob_delta_1h = float(prob_delta_1h)
-        # If API has no 1h change, use 24h/24 as proxy so "large prob" can still fire
-        if prob_delta_1h is None:
-            delta_24h = m.get("delta_24h")
-            if delta_24h is not None:
-                try:
-                    prob_delta_1h = float(delta_24h) / 24.0
-                except (TypeError, ValueError):
-                    pass
-        hourly_vol = _hourly_volume_usd(volume_24h)
-        age_hours = _market_age_hours(m.get("created_at_timestamp"))
-        delta_24h_val = m.get("delta_24h")
-        if delta_24h_val is not None:
-            try:
-                delta_24h_val = float(delta_24h_val)
-            except (TypeError, ValueError):
-                delta_24h_val = None
-        combined, large_prob, volume_spike, new_hot = _classify_signal(
-            prob_delta_1h, volume_change_1h, hourly_vol, volume_24h, age_hours, delta_24h=delta_24h_val
+        delta_1h = float(prob_delta_1h) if prob_delta_1h is not None else None
+        if delta_1h is None and delta_24h is not None:
+            delta_1h = delta_24h / 24.0
+
+        vol_6h_ago = get_volume_6h_ago(condition_id, state)
+        volume_change_6h_pct: float | None = None
+        if vol_6h_ago is not None and vol_6h_ago > 0:
+            volume_change_6h_pct = ((volume_24h - vol_6h_ago) / vol_6h_ago) * 100.0
+
+        abs_delta_3h = abs(delta_3h)
+        abs_delta_6h = abs(delta_6h)
+        abs_delta_24h = abs(delta_24h or 0)
+
+        is_shock = _is_market_shock(abs_delta_3h, abs_delta_6h)
+        is_trend = _is_market_trend(abs_delta_24h, is_shock)
+        is_disagreement = _is_market_disagreement(
+            volume_change_6h_pct, abs_delta_6h, volume_24h
         )
-        if not (combined or large_prob or volume_spike or new_hot):
-            n_no_qualify += 1
-            continue
-        vol_growth_pct = 0.0
-        if prev_vol and prev_vol > 0 and volume_change_1h is not None:
-            vol_growth_pct = (volume_change_1h / prev_vol) * 100
-        score = _score_signal(
-            combined, large_prob, volume_spike, new_hot,
-            prob_delta_1h, vol_growth_pct, hourly_vol, liq,
+        is_activity = _is_activity_spike(volume_change_6h_pct, volume_24h)
+
+        signal_type = _assign_signal_type(
+            is_shock, is_disagreement, is_trend, is_activity
         )
-        why = _why_matters(combined, large_prob, volume_spike, new_hot, prob_delta_1h)
-        candidates.append({
-            "condition_id": condition_id,
-            "question": m.get("question") or "Unknown",
-            "slug": m.get("slug") or "",
-            "liquidity": liq,
-            "volume_24h": volume_24h,
-            "volume_change_1h": volume_change_1h,
-            "current_probability": m.get("current_probability"),
-            "previous_probability": m.get("previous_probability"),
-            "probability_delta_1h": prob_delta_1h,
-            "delta_24h": m.get("delta_24h"),
-            "score": round(score, 2),
-            "why_matters": why,
-            "combined": combined,
-            "large_prob": large_prob,
-            "volume_spike": volume_spike,
-            "new_hot": new_hot,
-        })
+
+        # Only add as candidate if it qualifies for something other than pure trending,
+        # or we'll add trending later from the full set
+        if signal_type != "trending":
+            score = _score_signal(
+                signal_type,
+                delta_6h,
+                delta_24h,
+                volume_change_6h_pct or 0,
+                volume_24h,
+            )
+            prev_prob = m.get("previous_probability")
+            curr_prob = m.get("current_probability")
+            candidates.append({
+                "condition_id": condition_id,
+                "question": m.get("question") or "Unknown",
+                "slug": m.get("slug") or "",
+                "liquidity": liq,
+                "volume_24h": volume_24h,
+                "current_probability": curr_prob,
+                "previous_probability": prev_prob,
+                "probability_delta_1h": delta_1h,
+                "delta_24h": delta_24h,
+                "delta_6h": delta_6h,
+                "delta_3h": delta_3h,
+                "volume_change_6h_pct": volume_change_6h_pct,
+                "score": round(score, 4),
+                "signal_type": signal_type,
+                "why_matters": _why_matters(signal_type),
+            })
+        else:
+            # Keep one trending candidate: highest volume_24h (for fallback when no other signals)
+            candidates.append({
+                "condition_id": condition_id,
+                "question": m.get("question") or "Unknown",
+                "slug": m.get("slug") or "",
+                "liquidity": liq,
+                "volume_24h": volume_24h,
+                "current_probability": m.get("current_probability"),
+                "previous_probability": m.get("previous_probability"),
+                "probability_delta_1h": delta_1h,
+                "delta_24h": delta_24h,
+                "delta_6h": delta_6h,
+                "delta_3h": delta_3h,
+                "volume_change_6h_pct": volume_change_6h_pct,
+                "score": round(_score_signal("trending", delta_6h, delta_24h, volume_change_6h_pct or 0, volume_24h), 4),
+                "signal_type": "trending",
+                "why_matters": _why_matters("trending"),
+            })
+
     logger.info(
         "Hourly scan: %s markets, %s with liquidity>=%s, %s on cooldown, %s candidates",
         len(markets), n_liq, int(MIN_LIQ), n_cooldown, len(candidates),
     )
+
     if not candidates:
         state = update_market_volumes(state, volume_updates)
+        state = append_volume_snapshot(state, volume_updates)
         return None, state
-    best = max(candidates, key=lambda x: float(x.get("score") or 0))
+
+    # Sort by priority (shock first) then by score descending
+    def _rank(c: dict) -> tuple[int, float]:
+        prio = _SIGNAL_PRIORITY.get(c.get("signal_type") or "trending", 99)
+        return (prio, -(float(c.get("score") or 0)))
+
+    candidates.sort(key=_rank)
+    best = candidates[0]
+
+    # If best is trending, only allow when no higher-priority signal exists
+    has_higher = any(
+        _SIGNAL_PRIORITY.get(c.get("signal_type") or "trending", 99) < _SIGNAL_PRIORITY["trending"]
+        for c in candidates
+    )
+    if best.get("signal_type") == "trending" and has_higher:
+        non_trending = [c for c in candidates if c.get("signal_type") != "trending"]
+        non_trending.sort(key=lambda c: ( _SIGNAL_PRIORITY.get(c.get("signal_type"), 99), -(float(c.get("score") or 0))))
+        best = non_trending[0]
+
     state = update_market_volumes(state, volume_updates)
+    state = append_volume_snapshot(state, volume_updates)
     return best, state

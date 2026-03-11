@@ -16,6 +16,7 @@ from formatter import format_daily_digest
 from state import (
     clear_daily_signals_for_new_day,
     get_daily_signals_for_digest,
+    get_top_moves_for_digest,
     load_daily_signals,
 )
 from telegram_sender import send_telegram
@@ -33,9 +34,10 @@ def main() -> None:
         sys.exit(1)
 
     daily = load_daily_signals()
-    top = get_daily_signals_for_digest(daily, max_items=config.MAX_ITEMS_DAILY_DIGEST)
-    text = format_daily_digest(top)
-    logger.info("Sending daily digest with %s signals", len(top))
+    top_moves = get_top_moves_for_digest(daily, max_items=getattr(config, "TOP_MOVES_DAILY_COUNT", 5))
+    top_signals = get_daily_signals_for_digest(daily, max_items=config.MAX_ITEMS_DAILY_DIGEST)
+    text = format_daily_digest(top_moves, top_signals)
+    logger.info("Sending daily digest: %s top moves, %s signals", len(top_moves), len(top_signals))
     if not send_telegram(text):
         logger.error("Telegram send failed")
         sys.exit(1)

@@ -12,25 +12,40 @@ if _env_path.exists():
     except ImportError:
         pass
 
-# Required for sending digest
+# Required for sending
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 
-# Polymarket and thresholds (fixed defaults; no env vars needed for MVP)
+# Polymarket
 POLYMARKET_GAMMA_URL = "https://gamma-api.polymarket.com"
-MIN_LIQUIDITY = 500.0
-MIN_LIQUIDITY_HOURLY = 5000.0  # hourly mode: avoid low-quality
-MIN_ABS_DELTA_24H = 5.0
-MAX_ITEMS_IN_DIGEST = 10
-MAX_ITEMS_DAILY_DIGEST = 6
 MAX_MARKETS_TO_SCAN = 150
 REQUEST_TIMEOUT_SECONDS = 30
 
-# Hourly signal thresholds
-HOURLY_COMBINED_VOLUME_CHANGE = 100.0
-HOURLY_COMBINED_ABS_DELTA_PP = 20.0
-HOURLY_LARGE_PROB_MIN_PP_24H = 10.0   # when only 24h data: treat as signal if |delta_24h| >= this
-HOURLY_VOLUME_SPIKE_CHANGE = 100.0
-HOURLY_VOLUME_SPIKE_MIN_USD = 2000.0
-HOURLY_NEW_MARKET_AGE_HOURS = 24.0
-HOURLY_NEW_MARKET_DAILY_VOLUME = 10000.0
+# Hourly: min liquidity to consider a market (avoid noisy low-quality)
+MIN_LIQUIDITY_HOURLY = 1000.0
+
+# Editorial signal thresholds
+# 1) Market shock: very sharp repricing in short period
+MARKET_SHOCK_MIN_DELTA_3H_PP = 15.0   # abs(delta_3h) >= 15 (approximated from 24h)
+MARKET_SHOCK_MIN_DELTA_6H_PP = 20.0  # OR abs(delta_6h) >= 20
+# 2) Market trend: slower meaningful move over 24h (and NOT shock)
+MARKET_TREND_MIN_DELTA_24H_PP = 10.0
+# 3) Market disagreement: heavy trading, little price move
+MARKET_DISAGREEMENT_VOL_CHANGE_6H_PCT = 70.0
+MARKET_DISAGREEMENT_MAX_ABS_DELTA_6H_PP = 3.0
+MARKET_DISAGREEMENT_MIN_DAILY_VOLUME = 10000.0
+# 4) Activity spike (existing)
+ACTIVITY_SPIKE_MIN_VOLUME_CHANGE_6H_PCT = 70.0
+ACTIVITY_SPIKE_MIN_DAILY_VOLUME = 5000.0
+# 5) Repricing (legacy; superseded by shock/trend where applicable)
+REPRICING_MIN_DELTA_6H_PP = 10.0
+REPRICING_MIN_DELTA_24H_PP = 15.0
+
+# Daily digest
+MAX_ITEMS_DAILY_DIGEST = 6
+TOP_MOVES_DAILY_COUNT = 5
+
+# Legacy (main.py / analyzer)
+MIN_LIQUIDITY = 500.0
+MIN_ABS_DELTA_24H = 5.0
+MAX_ITEMS_IN_DIGEST = 10
