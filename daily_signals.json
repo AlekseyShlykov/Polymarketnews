@@ -32,5 +32,22 @@
     "score": 90.2813,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xa0c492acb221e77adbe84953fec4fc917e45e8b67121c1852d20e2fb9a29064f",
+    "question": "Will the New York Rangers win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-new-york-rangers-win-the-2026-nhl-stanley-cup",
+    "liquidity": 151800.94363,
+    "volume_24h": 61110.754000000015,
+    "current_probability": 0.2,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 82.58592195953902,
+    "score": 80.7895,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
