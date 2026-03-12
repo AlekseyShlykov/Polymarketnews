@@ -15,5 +15,22 @@
     "score": 3.0133,
     "signal_type": "trending",
     "why_matters": "This was one of the most actively traded markets of the day."
+  },
+  {
+    "condition_id": "0x32b09f6390252b37d674501527e709016d55581b2c1e544bd4b8167f5f732f4c",
+    "question": "Will Jesus Christ return before GTA VI?",
+    "slug": "will-jesus-christ-return-before-gta-vi-665",
+    "liquidity": 696717.8784,
+    "volume_24h": 51502.946316999994,
+    "current_probability": 48.0,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 94.85110157286643,
+    "score": 85.6528,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
