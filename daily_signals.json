@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "condition_id": "0xc58cfb7397c4f3f803f5c20135cafa7f6d2c87cf3bb1e6138042b95d828e1866",
+    "question": "Will the Charlotte Hornets win the 2026 NBA Finals?",
+    "slug": "will-the-charlotte-hornets-win-the-2026-nba-finals",
+    "liquidity": 386390.42971,
+    "volume_24h": 169940.391293,
+    "current_probability": 1.2,
+    "previous_probability": 1.1,
+    "probability_delta_1h": 0.1,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 20.06895950880834,
+    "score": 3.0133,
+    "signal_type": "trending",
+    "why_matters": "This was one of the most actively traded markets of the day."
+  }
+]
