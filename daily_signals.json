@@ -287,5 +287,22 @@
     "score": 3.1539,
     "signal_type": "trending",
     "why_matters": "This was one of the most actively traded markets of the day."
+  },
+  {
+    "condition_id": "0x48dd35aba75f4ffb52d3d19e6665925512e6462ba25232536aa1e7c5ad3dad7b",
+    "question": "Will the Seattle Kraken win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-seattle-kraken-win-the-2026-nhl-stanley-cup",
+    "liquidity": 157301.52224,
+    "volume_24h": 7330.738565999999,
+    "current_probability": 0.6,
+    "previous_probability": 0.7,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 75.27891174956335,
+    "score": 32.5066,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
