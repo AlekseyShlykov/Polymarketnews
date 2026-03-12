@@ -270,5 +270,22 @@
     "score": 54.0158,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0xb76183fb9e7e80c5a8f983a87ceefd35c9c177f684dd001d7387dc7b70d596d6",
+    "question": "Will the Miami Heat win the 2026 NBA Finals?",
+    "slug": "will-the-miami-heat-win-the-2026-nba-finals",
+    "liquidity": 342616.55914,
+    "volume_24h": 301170.00982700003,
+    "current_probability": 1.0,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": -12.551102690870785,
+    "score": 3.1539,
+    "signal_type": "trending",
+    "why_matters": "This was one of the most actively traded markets of the day."
   }
 ]
