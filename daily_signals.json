@@ -100,5 +100,22 @@
     "score": 53.9405,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0x82d8c535c037a779ffbd2eb94704b093a5341350b49ca68128fc1c16a0901e4a",
+    "question": "Will the Boston Bruins win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-boston-bruins-win-the-2026-nhl-stanley-cup",
+    "liquidity": 142376.07331,
+    "volume_24h": 13501.637615,
+    "current_probability": 1.0,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 171.0880651189819,
+    "score": 115.8129,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
