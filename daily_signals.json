@@ -185,5 +185,22 @@
     "score": 94.6095,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x663ab202c03a5e1d399578d44a3b124307db73caba79b2ead36c52ce6094b2d4",
+    "question": "Will any country leave NATO by June 30, 2026?",
+    "slug": "will-any-country-leave-nato-by-june-30-2026",
+    "liquidity": 15421.44712,
+    "volume_24h": 10833.891873,
+    "current_probability": 2.3,
+    "previous_probability": 2.1,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 131.93173967211453,
+    "score": 100.2653,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
