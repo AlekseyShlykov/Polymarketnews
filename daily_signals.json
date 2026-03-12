@@ -117,5 +117,22 @@
     "score": 115.8129,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x9a3436e94742acc7049aa0ff10992dc1c6a574535c3150ea157b7631cad83e2c",
+    "question": "Will the San Jose Sharks win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-san-jose-sharks-win-the-2026-nhl-stanley-cup",
+    "liquidity": 125561.77708,
+    "volume_24h": 24218.596916,
+    "current_probability": 0.3,
+    "previous_probability": 0.2,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 160.22338107980596,
+    "score": 111.7831,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
