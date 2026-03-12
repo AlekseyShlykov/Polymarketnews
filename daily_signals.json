@@ -304,5 +304,22 @@
     "score": 32.5066,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0x543da007c2f149346cf9f9f21021f1b2e10c46c78fcd0c9297c0c21f10c94626",
+    "question": "Will the Los Angeles Clippers win the 2026 NBA Finals?",
+    "slug": "will-the-los-angeles-clippers-win-the-2026-nba-finals",
+    "liquidity": 279548.54436,
+    "volume_24h": 243719.91487100002,
+    "current_probability": 1.7,
+    "previous_probability": 1.6,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 9.006589905056936,
+    "score": 3.1034,
+    "signal_type": "trending",
+    "why_matters": "This was one of the most actively traded markets of the day."
   }
 ]
