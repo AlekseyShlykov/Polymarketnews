@@ -168,5 +168,22 @@
     "score": 117.3715,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xbb57ccf5853a85487bc3d83d04d669310d28c6c810758953b9d9b91d1aee89d2",
+    "question": "Will bitcoin hit $1m before GTA VI?",
+    "slug": "will-bitcoin-hit-1m-before-gta-vi-872",
+    "liquidity": 420365.85789,
+    "volume_24h": 18478.017995000006,
+    "current_probability": 48.8,
+    "previous_probability": 48.9,
+    "probability_delta_1h": 0.1,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 117.45854680923276,
+    "score": 94.6095,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
