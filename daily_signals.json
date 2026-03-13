@@ -151,5 +151,22 @@
     "score": 37.6413,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0xf523e45d6bfe49d30e45e4e7794fd6e5f621b0304e07044fef156e6dd4d4b249",
+    "question": "Will the Dallas Mavericks win the 2026 NBA Finals?",
+    "slug": "will-the-dallas-mavericks-win-the-2026-nba-finals",
+    "liquidity": 476183.74877,
+    "volume_24h": 13210.95,
+    "current_probability": 0.1,
+    "previous_probability": 0.2,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 990.9575126966431,
+    "score": 443.9252,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
