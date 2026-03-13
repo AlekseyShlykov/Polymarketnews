@@ -372,5 +372,22 @@
     "score": 3.1846,
     "signal_type": "trending",
     "why_matters": "This was one of the most actively traded markets of the day."
+  },
+  {
+    "condition_id": "0x3b6cdd4f72cef7f29ff7e054444095564dc582266b7230be3c2b5f194d89f37d",
+    "question": "Will the Los Angeles Kings win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-los-angeles-kings-win-the-2026-nhl-stanley-cup",
+    "liquidity": 121092.45333,
+    "volume_24h": 6307.095176000001,
+    "current_probability": 0.4,
+    "previous_probability": 0.5,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 123.8480010468419,
+    "score": 51.8966,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
