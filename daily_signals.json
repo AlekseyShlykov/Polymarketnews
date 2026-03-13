@@ -355,5 +355,22 @@
     "score": 3.2639,
     "signal_type": "trending",
     "why_matters": "This was one of the most actively traded markets of the day."
+  },
+  {
+    "condition_id": "0xcccb7e7613a087c132b69cbf3a02bece3fdcb824c1da54ae79acc8d4a562d902",
+    "question": "GTA VI released before June 2026?",
+    "slug": "gta-vi-released-before-june-2026",
+    "liquidity": 40506.58039,
+    "volume_24h": 333790.32303599984,
+    "current_probability": 2.5,
+    "previous_probability": 2.8,
+    "probability_delta_1h": -0.008333333333333333,
+    "delta_24h": -0.2,
+    "delta_6h": -0.05,
+    "delta_3h": -0.025,
+    "volume_change_6h_pct": -1.2729341434498136,
+    "score": 3.1846,
+    "signal_type": "trending",
+    "why_matters": "This was one of the most actively traded markets of the day."
   }
 ]
