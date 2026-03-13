@@ -321,5 +321,22 @@
     "score": 3.2774,
     "signal_type": "trending",
     "why_matters": "This was one of the most actively traded markets of the day."
+  },
+  {
+    "condition_id": "0xc0336e4897d2d044c0bcc234f72248ef7db97dca69f0caf1666a67ca55034b65",
+    "question": "MegaETH market cap (FDV) >$800M one day after launch?",
+    "slug": "megaeth-market-cap-fdv-800m-one-day-after-launch-987-114-655",
+    "liquidity": 23676.8264,
+    "volume_24h": 6963.099506999999,
+    "current_probability": 60.0,
+    "previous_probability": 58.5,
+    "probability_delta_1h": 0.0625,
+    "delta_24h": 1.5,
+    "delta_6h": 0.375,
+    "delta_3h": 0.1875,
+    "volume_change_6h_pct": 207.20817290820239,
+    "score": 87.6454,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
