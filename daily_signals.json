@@ -117,5 +117,22 @@
     "score": 1134.2664,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xcccb7e7613a087c132b69cbf3a02bece3fdcb824c1da54ae79acc8d4a562d902",
+    "question": "GTA VI released before June 2026?",
+    "slug": "gta-vi-released-before-june-2026",
+    "liquidity": 46520.6586,
+    "volume_24h": 130735.67095099998,
+    "current_probability": 2.4,
+    "previous_probability": 2.6,
+    "probability_delta_1h": -0.008333333333333333,
+    "delta_24h": -0.2,
+    "delta_6h": -0.05,
+    "delta_3h": -0.025,
+    "volume_change_6h_pct": 158.02549950281104,
+    "score": 111.4954,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
