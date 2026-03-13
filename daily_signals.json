@@ -202,5 +202,22 @@
     "score": 97.754,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x8e7a03cb1970e2ad6533b01892403516b6b3f5b5fa90ed7d104c28b27e40ba00",
+    "question": "MicroStrategy sells any Bitcoin by June 30, 2026?",
+    "slug": "microstrategy-sells-any-bitcoin-by-june-30-2026",
+    "liquidity": 149555.196,
+    "volume_24h": 10985.395348000004,
+    "current_probability": 3.0,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 1666.2765129867291,
+    "score": 713.8367,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
