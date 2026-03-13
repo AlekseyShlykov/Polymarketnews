@@ -389,5 +389,22 @@
     "score": 51.8966,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0xf8f63bb47b2a7c2e0c1be3cedf4075079b11c07476d76a9469065b0c4791961a",
+    "question": "Will the Colorado Avalanche win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-colorado-avalanche-win-the-2026-nhl-stanley-cup",
+    "liquidity": 108611.72988,
+    "volume_24h": 169892.35513500002,
+    "current_probability": 22.3,
+    "previous_probability": 23.6,
+    "probability_delta_1h": 0.9,
+    "delta_24h": -1.2,
+    "delta_6h": -0.3,
+    "delta_3h": -0.15,
+    "volume_change_6h_pct": -22.879863376564078,
+    "score": 3.0407,
+    "signal_type": "trending",
+    "why_matters": "This was one of the most actively traded markets of the day."
   }
 ]
