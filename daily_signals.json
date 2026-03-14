@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "condition_id": "0xb2abfc4e48334d87681240cd6a7e63c728e13973fbd68951b45bc86d6c4491e4",
+    "question": "MegaETH market cap (FDV) >$4B one day after launch?",
+    "slug": "megaeth-market-cap-fdv-4b-one-day-after-launch-484-688-448-486-873-133-182",
+    "liquidity": 69184.20707,
+    "volume_24h": 6448.956701,
+    "current_probability": 3.0,
+    "previous_probability": 3.1,
+    "probability_delta_1h": -0.2,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 459.89914220470587,
+    "score": 186.3226,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
+  }
+]
