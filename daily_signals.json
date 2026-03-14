@@ -491,5 +491,22 @@
     "score": 65.8706,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0xdee5db5410b362783a1405b66b9aa08a7d050ae1f99e8da85b9d1ae7962dad3b",
+    "question": "Will Harvey Weinstein be sentenced to between 20 and 30 years in prison?",
+    "slug": "will-harvey-weinstein-be-sentenced-to-between-20-and-30-years-in-prison",
+    "liquidity": 1146.30624,
+    "volume_24h": 416.816686,
+    "current_probability": 27.0,
+    "previous_probability": 16.8,
+    "probability_delta_1h": 0.9,
+    "delta_24h": 10.2,
+    "delta_6h": 2.55,
+    "delta_3h": 1.275,
+    "volume_change_6h_pct": null,
+    "score": 53.8488,
+    "signal_type": "market_trend",
+    "why_matters": "The market moved steadily over the course of the day."
   }
 ]
