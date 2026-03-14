@@ -66,5 +66,22 @@
     "score": 88.4651,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xa8b42e207814d2844997523ba83e708b5bfe19cf5d2203325e4eb3ed459a9ded",
+    "question": "Will the Winnipeg Jets win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-winnipeg-jets-win-the-2026-nhl-stanley-cup",
+    "liquidity": 137850.62037,
+    "volume_24h": 20673.523,
+    "current_probability": 0.2,
+    "previous_probability": -0.1,
+    "probability_delta_1h": 0.2,
+    "delta_24h": 0.3,
+    "delta_6h": 0.075,
+    "delta_3h": 0.0375,
+    "volume_change_6h_pct": 103.13618495664907,
+    "score": 89.2486,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
