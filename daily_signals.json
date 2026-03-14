@@ -423,5 +423,22 @@
     "score": 38.9763,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0x567f1ff714731fafa702d454a105b064a7ec4d10f6fb71ad3221f4918681c709",
+    "question": "Will the Philadelphia 76ers win the 2026 NBA Finals?",
+    "slug": "will-the-philadelphia-76ers-win-the-2026-nba-finals",
+    "liquidity": 556234.37991,
+    "volume_24h": 25388.041332,
+    "current_probability": 0.6,
+    "previous_probability": 0.2,
+    "probability_delta_1h": 0.016666666666666666,
+    "delta_24h": 0.4,
+    "delta_6h": 0.1,
+    "delta_3h": 0.05,
+    "volume_change_6h_pct": 127.4276933489225,
+    "score": 99.1866,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
