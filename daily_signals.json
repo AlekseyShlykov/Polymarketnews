@@ -15,5 +15,22 @@
     "score": 186.3226,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0xb87df3ecfdb937e0d5bd495d7cc7e88062097616e0c59ce478e101eff5020eb7",
+    "question": "Starmer out by March 31, 2026?",
+    "slug": "starmer-out-by-march-31-2026",
+    "liquidity": 21005.61318,
+    "volume_24h": 7893.435741999999,
+    "current_probability": 4.1,
+    "previous_probability": 5.1,
+    "probability_delta_1h": -0.041666666666666664,
+    "delta_24h": -1.0,
+    "delta_6h": -0.25,
+    "delta_3h": -0.125,
+    "volume_change_6h_pct": 102.1891075955545,
+    "score": 44.8191,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
