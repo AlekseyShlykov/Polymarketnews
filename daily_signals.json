@@ -593,5 +593,22 @@
     "score": 186.0048,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xfda648d24cdad32dfe959195bd75ef4c81fbea5130eb6c7a4a0c18607a11ce63",
+    "question": "Will the Atlanta Hawks win the 2026 NBA Finals?",
+    "slug": "will-the-atlanta-hawks-win-the-2026-nba-finals",
+    "liquidity": 928829.36386,
+    "volume_24h": 319541.74730600085,
+    "current_probability": 0.3,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 632.1550833841593,
+    "score": 301.0307,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
