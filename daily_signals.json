@@ -49,5 +49,22 @@
     "score": 91.62,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x6b44bd667fad6cb5b3b68d8bd1055a038c77d9176dbd51f123879797cc3368a7",
+    "question": "Will the Cleveland Cavaliers win the 2026 NBA Finals?",
+    "slug": "will-the-cleveland-cavaliers-win-the-2026-nba-finals",
+    "liquidity": 259817.89462,
+    "volume_24h": 60477.744447000005,
+    "current_probability": 5.2,
+    "previous_probability": 5.8,
+    "probability_delta_1h": -0.1,
+    "delta_24h": -0.7,
+    "delta_6h": -0.175,
+    "delta_3h": -0.0875,
+    "volume_change_6h_pct": 99.4037853883024,
+    "score": 88.704,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
