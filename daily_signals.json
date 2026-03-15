@@ -134,5 +134,22 @@
     "score": 299.3496,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x567f1ff714731fafa702d454a105b064a7ec4d10f6fb71ad3221f4918681c709",
+    "question": "Will the Philadelphia 76ers win the 2026 NBA Finals?",
+    "slug": "will-the-philadelphia-76ers-win-the-2026-nba-finals",
+    "liquidity": 575247.92307,
+    "volume_24h": 47015.652533,
+    "current_probability": 0.5,
+    "previous_probability": 0.1,
+    "probability_delta_1h": 0.016666666666666666,
+    "delta_24h": 0.4,
+    "delta_6h": 0.1,
+    "delta_3h": 0.05,
+    "volume_change_6h_pct": 307.94249854895855,
+    "score": 171.5466,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
