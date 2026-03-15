@@ -219,5 +219,22 @@
     "score": 122.6684,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x3b6cdd4f72cef7f29ff7e054444095564dc582266b7230be3c2b5f194d89f37d",
+    "question": "Will the Los Angeles Kings win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-los-angeles-kings-win-the-2026-nhl-stanley-cup",
+    "liquidity": 133365.51576,
+    "volume_24h": 10946.698551000001,
+    "current_probability": 0.7,
+    "previous_probability": 0.8,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 161.61063666531254,
+    "score": 112.1395,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
