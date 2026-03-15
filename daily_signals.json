@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "condition_id": "0xf8f63bb47b2a7c2e0c1be3cedf4075079b11c07476d76a9469065b0c4791961a",
+    "question": "Will the Colorado Avalanche win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-colorado-avalanche-win-the-2026-nhl-stanley-cup",
+    "liquidity": 105124.28645,
+    "volume_24h": 251406.29178000003,
+    "current_probability": 22.4,
+    "previous_probability": 23.7,
+    "probability_delta_1h": 0.9,
+    "delta_24h": -1.2,
+    "delta_6h": -0.3,
+    "delta_3h": -0.15,
+    "volume_change_6h_pct": 80.12129337182337,
+    "score": 82.1972,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
+  }
+]
