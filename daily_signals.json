@@ -202,5 +202,22 @@
     "score": 145.1709,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x82d8c535c037a779ffbd2eb94704b093a5341350b49ca68128fc1c16a0901e4a",
+    "question": "Will the Boston Bruins win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-boston-bruins-win-the-2026-nhl-stanley-cup",
+    "liquidity": 137465.35734,
+    "volume_24h": 16703.952931,
+    "current_probability": 0.9,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 188.09380701521252,
+    "score": 122.6684,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
