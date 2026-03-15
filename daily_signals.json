@@ -304,5 +304,22 @@
     "score": 324.436,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x495e6b49e7397bb4e6f8ce69e246ccb33b744678bd9bf88cbecbd3a113b05423",
+    "question": "Will Russia invade a NATO country by June 30, 2026?",
+    "slug": "will-russia-invade-a-nato-country-by-june-30-2026",
+    "liquidity": 46841.40943,
+    "volume_24h": 14078.152605,
+    "current_probability": 5.3,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 86.39514202857958,
+    "score": 81.9462,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
