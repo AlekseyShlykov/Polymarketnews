@@ -253,5 +253,22 @@
     "score": 73.4091,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0x796e791e7058571e460278814fc7a3183752285338f1400087b98bef3c447908",
+    "question": "Will the Los Angeles Lakers win the 2026 NBA Finals?",
+    "slug": "will-the-los-angeles-lakers-win-the-2026-nba-finals",
+    "liquidity": 300787.40689,
+    "volume_24h": 190727.799782,
+    "current_probability": 2.4,
+    "previous_probability": null,
+    "probability_delta_1h": -0.1,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 75.11374364310863,
+    "score": 78.0851,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
