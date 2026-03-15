@@ -168,5 +168,22 @@
     "score": 129.1461,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x32b09f6390252b37d674501527e709016d55581b2c1e544bd4b8167f5f732f4c",
+    "question": "Will Jesus Christ return before GTA VI?",
+    "slug": "will-jesus-christ-return-before-gta-vi-665",
+    "liquidity": 737665.9457,
+    "volume_24h": 14498.333510999993,
+    "current_probability": 48.0,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 207.0308211538828,
+    "score": 130.2078,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
