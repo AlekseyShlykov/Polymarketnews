@@ -219,5 +219,22 @@
     "score": 1528.319,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x41d6f86edc88c14aa83373e72b4c26a403b159208f8973c093b928fe16d72930",
+    "question": "Will the Calgary Flames win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-calgary-flames-win-the-2026-nhl-stanley-cup",
+    "liquidity": 132141.77897,
+    "volume_24h": 29016.690000000002,
+    "current_probability": 0.2,
+    "previous_probability": 0.4,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 368.1175880321168,
+    "score": 194.986,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
