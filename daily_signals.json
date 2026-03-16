@@ -49,5 +49,22 @@
     "score": 76.2407,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xdee5db5410b362783a1405b66b9aa08a7d050ae1f99e8da85b9d1ae7962dad3b",
+    "question": "Will Harvey Weinstein be sentenced to between 20 and 30 years in prison?",
+    "slug": "will-harvey-weinstein-be-sentenced-to-between-20-and-30-years-in-prison",
+    "liquidity": 1658.56376,
+    "volume_24h": 2787.766861000001,
+    "current_probability": 18.1,
+    "previous_probability": 7.9,
+    "probability_delta_1h": 0.9,
+    "delta_24h": 10.2,
+    "delta_6h": 2.55,
+    "delta_3h": 1.275,
+    "volume_change_6h_pct": 57.829398072996256,
+    "score": 77.4551,
+    "signal_type": "market_trend",
+    "why_matters": "The market moved steadily over the course of the day."
   }
 ]
