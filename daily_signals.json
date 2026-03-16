@@ -15,5 +15,22 @@
     "score": 225.8254,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x99d0ce2ab858154ba1ec511863dae5a9fe41731457022cf2ef8b1024cf97405a",
+    "question": "Will the New York Islanders win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-new-york-islanders-win-the-2026-nhl-stanley-cup",
+    "liquidity": 144383.052,
+    "volume_24h": 13619.084558000004,
+    "current_probability": 1.8,
+    "previous_probability": 1.8,
+    "probability_delta_1h": 0.1,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 102.12021077985779,
+    "score": 88.3979,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
