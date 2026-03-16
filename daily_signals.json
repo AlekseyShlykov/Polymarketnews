@@ -66,5 +66,22 @@
     "score": 77.4551,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0xf398b0e5016eeaee9b0885ed84012b6dc91269ac10d3b59d60722859c2e30b2f",
+    "question": "Will Harvey Weinstein be sentenced to no prison time?",
+    "slug": "will-harvey-weinstein-be-sentenced-to-no-prison-time",
+    "liquidity": 1359.89978,
+    "volume_24h": 4763.951997999999,
+    "current_probability": 26.8,
+    "previous_probability": 48.5,
+    "probability_delta_1h": -0.9,
+    "delta_24h": -21.7,
+    "delta_6h": -5.425,
+    "delta_3h": -2.7125,
+    "volume_change_6h_pct": 8.009893635450933,
+    "score": 77.2112,
+    "signal_type": "market_trend",
+    "why_matters": "The market moved steadily over the course of the day."
   }
 ]
