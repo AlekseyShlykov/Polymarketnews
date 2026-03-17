@@ -253,5 +253,22 @@
     "score": 77.2505,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xf398b0e5016eeaee9b0885ed84012b6dc91269ac10d3b59d60722859c2e30b2f",
+    "question": "Will Harvey Weinstein be sentenced to no prison time?",
+    "slug": "will-harvey-weinstein-be-sentenced-to-no-prison-time",
+    "liquidity": 1093.6902,
+    "volume_24h": 3409.983976000001,
+    "current_probability": 30.2,
+    "previous_probability": 51.9,
+    "probability_delta_1h": -0.9,
+    "delta_24h": -21.7,
+    "delta_6h": -5.425,
+    "delta_3h": -2.7125,
+    "volume_change_6h_pct": -11.691078171590915,
+    "score": 69.2473,
+    "signal_type": "market_trend",
+    "why_matters": "The market moved steadily over the course of the day."
   }
 ]
