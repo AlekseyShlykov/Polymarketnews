@@ -287,5 +287,22 @@
     "score": 60.4963,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0x6987d084de71031819f82051ea62b29a354628c3e4a22076a2acc197c776080a",
+    "question": "Will Russia capture Kostyantynivka by March 31?",
+    "slug": "will-russia-capture-kostyantynivka-by-march-31-872-578",
+    "liquidity": 10550.3404,
+    "volume_24h": 16142.848300000001,
+    "current_probability": 10.0,
+    "previous_probability": 7.0,
+    "probability_delta_1h": 0.125,
+    "delta_24h": 3.0,
+    "delta_6h": 0.75,
+    "delta_3h": 0.375,
+    "volume_change_6h_pct": 845.6352617774451,
+    "score": 390.7764,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
