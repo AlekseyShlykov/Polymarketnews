@@ -100,5 +100,22 @@
     "score": 269.9544,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x4e65282819c98c6aed529f357fbf5983b1ae9407a3c25bd50fe97b2906df68f9",
+    "question": "Will the Denver Nuggets win the 2026 NBA Finals?",
+    "slug": "will-the-denver-nuggets-win-the-2026-nba-finals",
+    "liquidity": 228457.6336,
+    "volume_24h": 41714.21172199998,
+    "current_probability": 8.0,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 480.17539894806214,
+    "score": 239.7298,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
