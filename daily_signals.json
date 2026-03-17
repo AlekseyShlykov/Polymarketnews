@@ -15,5 +15,22 @@
     "score": 61.6636,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0xced0cb8725bad43d78fda0cd0e5fa9e31804625cb3502b2c7897f8e8f7fa9e1f",
+    "question": "Kraken IPO by December 31, 2026?",
+    "slug": "kraken-ipo-by-december-31-2026",
+    "liquidity": 2084.2293,
+    "volume_24h": 6165.504456,
+    "current_probability": 84.0,
+    "previous_probability": 85.5,
+    "probability_delta_1h": -3.0,
+    "delta_24h": -1.5,
+    "delta_6h": -0.375,
+    "delta_3h": -0.1875,
+    "volume_change_6h_pct": 268.42316843126986,
+    "score": 112.101,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
