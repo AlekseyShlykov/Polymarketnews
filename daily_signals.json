@@ -219,5 +219,22 @@
     "score": 92.5574,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xef8394abc1bbe88ca089af87f6c8fa1f984aeabc99f20915610382ff1362ad7b",
+    "question": "Will Pump.fun perform an airdrop by March 31?",
+    "slug": "will-pumpfun-perform-an-airdrop-by-march-31",
+    "liquidity": 17165.99243,
+    "volume_24h": 12147.434022,
+    "current_probability": 1.2,
+    "previous_probability": 2.2,
+    "probability_delta_1h": 0.5,
+    "delta_24h": -1.0,
+    "delta_6h": -0.25,
+    "delta_3h": -0.125,
+    "volume_change_6h_pct": 79.67745909415603,
+    "score": 80.9222,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
