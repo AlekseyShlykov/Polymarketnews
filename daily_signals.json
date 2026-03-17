@@ -32,5 +32,22 @@
     "score": 112.101,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0xda5c517dd5b78c80dec8ceb08ca4f466317633487827d7290332b4851cc4a4fa",
+    "question": "Macron out by June 30, 2026?",
+    "slug": "macron-out-by-june-30-2026-273",
+    "liquidity": 38684.65579,
+    "volume_24h": 6663.336259000001,
+    "current_probability": 3.3,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 108.38959637040662,
+    "score": 45.557,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
