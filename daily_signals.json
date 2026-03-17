@@ -49,5 +49,22 @@
     "score": 45.557,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0x2307312887c6de01a9f55b7b7afc7c4a0be8718d7d868280e7d898f0ea54f740",
+    "question": "MegaETH market cap (FDV) >$3B one day after launch?",
+    "slug": "megaeth-market-cap-fdv-2b-one-day-after-launch-392-656-565-965-418-578-388",
+    "liquidity": 40305.38029,
+    "volume_24h": 5691.861545000002,
+    "current_probability": 7.1,
+    "previous_probability": 7.7,
+    "probability_delta_1h": -0.024999999999999998,
+    "delta_24h": -0.6,
+    "delta_6h": -0.15,
+    "delta_3h": -0.075,
+    "volume_change_6h_pct": 80.36353684946849,
+    "score": 35.3272,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
