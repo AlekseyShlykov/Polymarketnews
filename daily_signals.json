@@ -83,5 +83,22 @@
     "score": 77.2112,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0x22e7b5e35423e76842dd3a5e1a21d13793811080d5e7b2896d0c001bd5e97d54",
+    "question": "Will the Oklahoma City Thunder win the 2026 NBA Finals?",
+    "slug": "will-the-oklahoma-city-thunder-win-the-2026-nba-finals",
+    "liquidity": 269906.4717,
+    "volume_24h": 118566.92570299996,
+    "current_probability": 37.0,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 555.0840417245664,
+    "score": 269.9544,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
