@@ -287,5 +287,22 @@
     "score": 135.0287,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xe459d1b598da754c9fd5fc155b6efe3a144aa80abbc7d041fce7d35d903d3c8e",
+    "question": "Will MegaETH perform an airdrop by June 30?",
+    "slug": "will-megaeth-perform-an-airdrop-by-june-30-143-229-513-574-212-254",
+    "liquidity": 17101.78374,
+    "volume_24h": 10628.099838,
+    "current_probability": 45.6,
+    "previous_probability": 44.5,
+    "probability_delta_1h": -0.1,
+    "delta_24h": 1.1,
+    "delta_6h": 0.275,
+    "delta_3h": 0.1375,
+    "volume_change_6h_pct": 1943.1814141999155,
+    "score": 826.4604,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
