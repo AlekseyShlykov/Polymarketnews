@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "condition_id": "0x4c317ee82d81e0a49aa9862a8c2d876fee322064acf02cd8e1346fbed36083e8",
+    "question": "Will the Columbus Blue Jackets win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-columbus-blue-jackets-win-the-2026-nhl-stanley-cup",
+    "liquidity": 89629.02874,
+    "volume_24h": 42310.180988,
+    "current_probability": 2.4,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 130.44420758088648,
+    "score": 99.8409,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
+  }
+]
