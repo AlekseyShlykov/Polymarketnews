@@ -253,5 +253,22 @@
     "score": 94.2687,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0xd3a3c1d537142ebc94ae25f7b268ce64e4e43e6452c5a912221d2e2744aeb312",
+    "question": "Will Pump.fun perform an airdrop by December 31, 2026",
+    "slug": "will-pumpfun-perform-an-airdrop-by-december-31-2026",
+    "liquidity": 3598.0313,
+    "volume_24h": 10019.67859,
+    "current_probability": 30.0,
+    "previous_probability": 33.0,
+    "probability_delta_1h": 0.5,
+    "delta_24h": -3.0,
+    "delta_6h": -0.75,
+    "delta_3h": -0.375,
+    "volume_change_6h_pct": 70.79191678314525,
+    "score": 80.7199,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
