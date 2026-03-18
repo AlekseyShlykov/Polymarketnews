@@ -117,5 +117,22 @@
     "score": 1493.3532,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x7014b40f62a559be0a0abd2bf1ca1ef16e44674b2c505bb5243c752f2e0d351f",
+    "question": "Will the Detroit Red Wings win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-detroit-red-wings-win-the-2026-nhl-stanley-cup",
+    "liquidity": 133960.35756,
+    "volume_24h": 26199.4275,
+    "current_probability": 1.1,
+    "previous_probability": 0.9,
+    "probability_delta_1h": 0.1,
+    "delta_24h": 0.2,
+    "delta_6h": 0.05,
+    "delta_3h": 0.025,
+    "volume_change_6h_pct": 3365.1560169668855,
+    "score": 1393.9458,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
