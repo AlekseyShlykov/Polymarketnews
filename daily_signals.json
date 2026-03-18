@@ -202,5 +202,22 @@
     "score": 105.6426,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xbefea6668e49e328db4d5c792bc15cea309bbc06101dfd6ced1e0556ad3ea301",
+    "question": "Will the Buffalo Sabres win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-buffalo-sabres-win-the-2026-nhl-stanley-cup",
+    "liquidity": 96215.20908,
+    "volume_24h": 17480.103127999995,
+    "current_probability": 5.9,
+    "previous_probability": 5.8,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 95.6244075336297,
+    "score": 85.862,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
