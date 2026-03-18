@@ -66,5 +66,22 @@
     "score": 110.6378,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x139b893a7ae21eaec72e887ba88910831944b4662512428c122c4ad0a5c125ac",
+    "question": "Will the Ottawa Senators win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-ottawa-senators-win-the-2026-nhl-stanley-cup",
+    "liquidity": 98875.00687,
+    "volume_24h": 31904.140775000003,
+    "current_probability": 3.0,
+    "previous_probability": 3.0,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 118.43115508810239,
+    "score": 95.1351,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
