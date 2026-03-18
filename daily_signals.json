@@ -32,5 +32,22 @@
     "score": 98.8367,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x44887f53abbfe7531b1384420b185a5f10ee42a4e6c9441d5883abd4f3c1e5ef",
+    "question": "Will the Dallas Stars win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-dallas-stars-win-the-2026-nhl-stanley-cup",
+    "liquidity": 76955.5732,
+    "volume_24h": 41626.71916999999,
+    "current_probability": 8.6,
+    "previous_probability": 8.0,
+    "probability_delta_1h": 0.024999999999999998,
+    "delta_24h": 0.6,
+    "delta_6h": 0.15,
+    "delta_3h": 0.075,
+    "volume_change_6h_pct": 393.1150327067077,
+    "score": 205.9251,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
