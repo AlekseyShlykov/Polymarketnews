@@ -185,5 +185,22 @@
     "score": 108.1946,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xe2b48e3b44de9658ee9c8b37354301763e33c0b502fd966839d644b4c0a9dea8",
+    "question": "Will Harvey Weinstein be sentenced to less than 5 years in prison?",
+    "slug": "will-harvey-weinstein-be-sentenced-to-less-than-5-years-in-prison",
+    "liquidity": 5328.90917,
+    "volume_24h": 1347.648447,
+    "current_probability": 9.0,
+    "previous_probability": 23.5,
+    "probability_delta_1h": -0.6041666666666666,
+    "delta_24h": -14.5,
+    "delta_6h": -3.625,
+    "delta_3h": -1.8125,
+    "volume_change_6h_pct": 9.207447870792,
+    "score": 65.1347,
+    "signal_type": "market_trend",
+    "why_matters": "The market moved steadily over the course of the day."
   }
 ]
