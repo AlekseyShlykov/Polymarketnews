@@ -219,5 +219,22 @@
     "score": 98.1375,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0x9a4db724246b51cbfbc8000dbbd6b54d72b057767c3690e63d940b26d78c6cb0",
+    "question": "MicroStrategy sells any Bitcoin by March 31, 2026?",
+    "slug": "microstrategy-sells-any-bitcoin-by-march-31-2026",
+    "liquidity": 97991.27776,
+    "volume_24h": 33923.607166,
+    "current_probability": 0.2,
+    "previous_probability": 0.4,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 217.7444925802359,
+    "score": 134.8758,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
