@@ -49,5 +49,22 @@
     "score": 33.8357,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0x7338d9dea0de820ed621abdff3de2d4b07a573bc0c1a6f7128941f4d0c5606e3",
+    "question": "Will the Orlando Magic win the 2026 NBA Finals?",
+    "slug": "will-the-orlando-magic-win-the-2026-nba-finals",
+    "liquidity": 597313.27453,
+    "volume_24h": 232765.46466999996,
+    "current_probability": 0.7,
+    "previous_probability": 0.6,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 37.572999840930194,
+    "score": 3.0919,
+    "signal_type": "trending",
+    "why_matters": "This was one of the most actively traded markets of the day."
   }
 ]
