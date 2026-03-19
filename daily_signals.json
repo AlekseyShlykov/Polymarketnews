@@ -168,5 +168,22 @@
     "score": 244.7577,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x649ad05a2868343271fe82ea692031d567ca1af652e3529788933157e94aa088",
+    "question": "Will the Minnesota Timberwolves win the 2026 NBA Finals?",
+    "slug": "will-the-minnesota-timberwolves-win-the-2026-nba-finals",
+    "liquidity": 276041.14068,
+    "volume_24h": 40350.535806,
+    "current_probability": 1.9,
+    "previous_probability": 1.8,
+    "probability_delta_1h": -0.1,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 150.93313310814295,
+    "score": 108.1946,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
