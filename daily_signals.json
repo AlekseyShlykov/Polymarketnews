@@ -134,5 +134,22 @@
     "score": 91.6227,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xbdd688664b4f3cf7ec4ec011607934fe8ae720c08353fc14a6e9dfbf6bbcf11a",
+    "question": "Will the Tampa Bay Lightning win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-tampa-bay-lightning-win-the-2026-nhl-stanley-cup",
+    "liquidity": 192122.01525,
+    "volume_24h": 101059.279494,
+    "current_probability": 11.8,
+    "previous_probability": 11.2,
+    "probability_delta_1h": 0.024999999999999998,
+    "delta_24h": 0.6,
+    "delta_6h": 0.15,
+    "delta_3h": 0.075,
+    "volume_change_6h_pct": 6425.794282663081,
+    "score": 2619.2186,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
