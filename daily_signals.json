@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "condition_id": "0xf398b0e5016eeaee9b0885ed84012b6dc91269ac10d3b59d60722859c2e30b2f",
+    "question": "Will Harvey Weinstein be sentenced to no prison time?",
+    "slug": "will-harvey-weinstein-be-sentenced-to-no-prison-time",
+    "liquidity": 1059.93812,
+    "volume_24h": 26793.819937,
+    "current_probability": 34.4,
+    "previous_probability": 56.1,
+    "probability_delta_1h": -0.9,
+    "delta_24h": -21.7,
+    "delta_6h": -5.425,
+    "delta_3h": -2.7125,
+    "volume_change_6h_pct": 0.9107902916838819,
+    "score": 74.8033,
+    "signal_type": "market_trend",
+    "why_matters": "The market moved steadily over the course of the day."
+  }
+]
