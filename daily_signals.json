@@ -202,5 +202,22 @@
     "score": 65.1347,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0x7b49b9bacb5f435bc10f3b100ff59e2fdd346f7f92a9001881bc9825a0af0f11",
+    "question": "Will China invades Taiwan before GTA VI?",
+    "slug": "will-china-invades-taiwan-before-gta-vi-716",
+    "liquidity": 96564.0395,
+    "volume_24h": 5219.465441000033,
+    "current_probability": 51.0,
+    "previous_probability": 50.5,
+    "probability_delta_1h": 0.5,
+    "delta_24h": 0.5,
+    "delta_6h": 0.125,
+    "delta_3h": 0.0625,
+    "volume_change_6h_pct": 237.8685217684623,
+    "score": 98.1375,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
