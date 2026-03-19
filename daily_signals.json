@@ -32,5 +32,22 @@
     "score": 3.1067,
     "signal_type": "trending",
     "why_matters": "This was one of the most actively traded markets of the day."
+  },
+  {
+    "condition_id": "0xe9674aadfabfa7171bcee4e38b66f1a7d7e0af538d3718301e7b3cf111e9b5dd",
+    "question": "Will OpenAI launch a new consumer hardware product by March 31, 2026?",
+    "slug": "will-openai-launch-a-new-consumer-hardware-product-by-march-31-2026",
+    "liquidity": 5640.77744,
+    "volume_24h": 7354.651482,
+    "current_probability": 1.7,
+    "previous_probability": 1.0,
+    "probability_delta_1h": -0.3,
+    "delta_24h": 0.8,
+    "delta_6h": 0.2,
+    "delta_3h": 0.1,
+    "volume_change_6h_pct": 75.62469722541961,
+    "score": 33.8357,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
