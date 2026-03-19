@@ -270,5 +270,22 @@
     "score": 558.0416,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xe202539dfbeced92dc4112f134a205c80ca6cf4db32bd82f05b291c297219fd8",
+    "question": "Will the Detroit Pistons win the 2026 NBA Finals?",
+    "slug": "will-the-detroit-pistons-win-the-2026-nba-finals",
+    "liquidity": 277874.35093,
+    "volume_24h": 200561.0000989999,
+    "current_probability": 2.7,
+    "previous_probability": 2.9,
+    "probability_delta_1h": 0.1,
+    "delta_24h": -0.2,
+    "delta_6h": -0.05,
+    "delta_3h": -0.025,
+    "volume_change_6h_pct": 511.9676309696233,
+    "score": 253.1793,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
