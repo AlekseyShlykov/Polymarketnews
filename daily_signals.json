@@ -287,5 +287,22 @@
     "score": 253.1793,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xc58cfb7397c4f3f803f5c20135cafa7f6d2c87cf3bb1e6138042b95d828e1866",
+    "question": "Will the Charlotte Hornets win the 2026 NBA Finals?",
+    "slug": "will-the-charlotte-hornets-win-the-2026-nba-finals",
+    "liquidity": 439890.65123,
+    "volume_24h": 167510.75412399997,
+    "current_probability": 0.7,
+    "previous_probability": 0.7,
+    "probability_delta_1h": 0.1,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 201.70307807890322,
+    "score": 128.8584,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
