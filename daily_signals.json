@@ -151,5 +151,22 @@
     "score": 78.7905,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x543da007c2f149346cf9f9f21021f1b2e10c46c78fcd0c9297c0c21f10c94626",
+    "question": "Will the Los Angeles Clippers win the 2026 NBA Finals?",
+    "slug": "will-the-los-angeles-clippers-win-the-2026-nba-finals",
+    "liquidity": 156950.00649,
+    "volume_24h": 70279.30576100005,
+    "current_probability": 1.8,
+    "previous_probability": 1.6,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 81.12177669507527,
+    "score": 80.4088,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
