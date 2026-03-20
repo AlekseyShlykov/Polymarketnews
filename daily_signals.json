@@ -134,5 +134,22 @@
     "score": 92.5782,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xb6b3d7a2037b3faa7e1306d741840d453432902d73cc9a146a035e40271eae73",
+    "question": "Will the San Antonio Spurs win the 2026 NBA Finals?",
+    "slug": "will-the-san-antonio-spurs-win-the-2026-nba-finals",
+    "liquidity": 286612.54301,
+    "volume_24h": 31043.46641,
+    "current_probability": 14.8,
+    "previous_probability": 14.6,
+    "probability_delta_1h": 0.1,
+    "delta_24h": 0.2,
+    "delta_6h": 0.05,
+    "delta_3h": 0.025,
+    "volume_change_6h_pct": 77.16187185486135,
+    "score": 78.7905,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
