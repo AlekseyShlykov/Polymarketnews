@@ -287,5 +287,22 @@
     "score": 85.6896,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xc829edf5ca6961e441c266546064b629c29a9313694689c0768db92810db62ff",
+    "question": "Will Drake release Iceman before GTA VI?",
+    "slug": "will-drake-release-iceman-before-gta-vi",
+    "liquidity": 19734.7162,
+    "volume_24h": 13017.921214999997,
+    "current_probability": 60.0,
+    "previous_probability": 55.1,
+    "probability_delta_1h": -0.2,
+    "delta_24h": 4.9,
+    "delta_6h": 1.225,
+    "delta_3h": 0.6125,
+    "volume_change_6h_pct": 69625.66931396927,
+    "score": 27905.9663,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
