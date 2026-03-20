@@ -49,5 +49,22 @@
     "score": 155.9338,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xbee2cd40473495f713c69b9dfbce9fc2837fa4011568222c83c83bb773e35053",
+    "question": "Starmer out by June 30, 2026?",
+    "slug": "starmer-out-by-june-30-2026-862-594-548",
+    "liquidity": 47995.3969,
+    "volume_24h": 7065.433959000001,
+    "current_probability": 45.0,
+    "previous_probability": 45.5,
+    "probability_delta_1h": 0.5,
+    "delta_24h": -0.5,
+    "delta_6h": -0.125,
+    "delta_3h": -0.0625,
+    "volume_change_6h_pct": 460.33640513988547,
+    "score": 187.2003,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
