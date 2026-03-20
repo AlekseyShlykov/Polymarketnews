@@ -219,5 +219,22 @@
     "score": 99.004,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x4405c62496c4fdd275d17ec31567a01534013c518c314ce61bb633b5e7cb6426",
+    "question": "Will the Toronto Raptors win the 2026 NBA Finals?",
+    "slug": "will-the-toronto-raptors-win-the-2026-nba-finals",
+    "liquidity": 618492.77079,
+    "volume_24h": 224041.084261,
+    "current_probability": 0.7,
+    "previous_probability": 0.8,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 84.8973000824843,
+    "score": 82.2088,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
