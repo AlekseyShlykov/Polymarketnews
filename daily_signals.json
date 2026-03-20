@@ -321,5 +321,22 @@
     "score": 80.0881,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0x6987d084de71031819f82051ea62b29a354628c3e4a22076a2acc197c776080a",
+    "question": "Will Russia capture Kostyantynivka by March 31?",
+    "slug": "will-russia-capture-kostyantynivka-by-march-31-872-578",
+    "liquidity": 13927.9746,
+    "volume_24h": 5079.1334289999995,
+    "current_probability": 6.0,
+    "previous_probability": 3.0,
+    "probability_delta_1h": 0.125,
+    "delta_24h": 3.0,
+    "delta_6h": 0.75,
+    "delta_3h": 0.375,
+    "volume_change_6h_pct": 307.1305927833396,
+    "score": 130.0855,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
