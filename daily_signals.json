@@ -83,5 +83,22 @@
     "score": 84.3183,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xd66cbb60c333c2eed61717370755c18bc7e494fed90cb507cd9b49c77100951d",
+    "question": "Will the Philadelphia Flyers win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-philadelphia-flyers-win-the-2026-nhl-stanley-cup",
+    "liquidity": 143156.93895,
+    "volume_24h": 5254.656,
+    "current_probability": 0.2,
+    "previous_probability": 0.3,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 106.97750907235313,
+    "score": 45.1028,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
