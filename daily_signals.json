@@ -253,5 +253,22 @@
     "score": 73.9382,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0xbefea6668e49e328db4d5c792bc15cea309bbc06101dfd6ced1e0556ad3ea301",
+    "question": "Will the Buffalo Sabres win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-buffalo-sabres-win-the-2026-nhl-stanley-cup",
+    "liquidity": 94466.86921,
+    "volume_24h": 264774.46712,
+    "current_probability": 8.6,
+    "previous_probability": 8.5,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 74.81999964194299,
+    "score": 78.2197,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
