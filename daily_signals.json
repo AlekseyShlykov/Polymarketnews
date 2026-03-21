@@ -270,5 +270,22 @@
     "score": 147.8027,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xd01354f96db7fc2184cc34ac463a80cc65e7ff5de64c8a2f3e07e8433317d75f",
+    "question": "Will the Florida Panthers win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-florida-panthers-win-the-2026-nhl-stanley-cup",
+    "liquidity": 81308.34245,
+    "volume_24h": 7124.619458,
+    "current_probability": 0.4,
+    "previous_probability": -0.8,
+    "probability_delta_1h": -0.1,
+    "delta_24h": 1.1,
+    "delta_6h": 0.275,
+    "delta_3h": 0.1375,
+    "volume_change_6h_pct": 96.19858705536018,
+    "score": 42.5673,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
