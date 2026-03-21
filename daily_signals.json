@@ -202,5 +202,22 @@
     "score": 84.7082,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x2bde6486e7067f48ee21344d8b5c1af458732536eb4d080932c88c3a7c2d2126",
+    "question": "Starmer out by December 31, 2026?",
+    "slug": "starmer-out-by-december-31-2026-936-416-977",
+    "liquidity": 28676.1518,
+    "volume_24h": 47795.10955399999,
+    "current_probability": 63.0,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 296.02238216893164,
+    "score": 166.1026,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
