@@ -236,5 +236,22 @@
     "score": 45.608,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0xc6158282b574047044e504aabb1bc1f86ed28097e62d69425cb4403847767945",
+    "question": "Starmer out by April 30, 2026?",
+    "slug": "starmer-out-by-april-30-2026",
+    "liquidity": 14249.2799,
+    "volume_24h": 6029.074385,
+    "current_probability": 7.0,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 930.5842107934254,
+    "score": 374.4098,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
