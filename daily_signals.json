@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "condition_id": "0x94123b93487bc2aa3b1b247dfd629364ff1c209bce78a5f64fbf8c1d87297c33",
+    "question": "Will the Vancouver Canucks win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-vancouver-canucks-win-the-2026-nhl-stanley-cup",
+    "liquidity": 139258.48704,
+    "volume_24h": 5811.91,
+    "current_probability": 0.1,
+    "previous_probability": 0.1,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 1598.346044826276,
+    "score": 641.6754,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
+  }
+]
