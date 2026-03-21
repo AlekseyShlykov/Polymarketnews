@@ -287,5 +287,22 @@
     "score": 42.5673,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0xbefea6668e49e328db4d5c792bc15cea309bbc06101dfd6ced1e0556ad3ea301",
+    "question": "Will the Buffalo Sabres win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-buffalo-sabres-win-the-2026-nhl-stanley-cup",
+    "liquidity": 97770.15673,
+    "volume_24h": 360307.58806700003,
+    "current_probability": 6.2,
+    "previous_probability": 6.1,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 5.076789664398121,
+    "score": 3.2012,
+    "signal_type": "trending",
+    "why_matters": "This was one of the most actively traded markets of the day."
   }
 ]
