@@ -15,5 +15,22 @@
     "score": 641.6754,
     "signal_type": "activity_spike",
     "why_matters": "Trading activity accelerated sharply."
+  },
+  {
+    "condition_id": "0x1c36595d8a1726549acca61c5eb8c9173de87c780ee1cee660ceb5b517530ab7",
+    "question": "Will the St. Louis Blues win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-st-louis-blues-win-the-2026-nhl-stanley-cup",
+    "liquidity": 132653.66837,
+    "volume_24h": 29986.555,
+    "current_probability": 0.1,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 1204.6935641065802,
+    "score": 529.4546,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
