@@ -66,5 +66,22 @@
     "score": 85.9853,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x54cb2293de4ce01c85b62b0c43911a36614c8558b02b70703326ca4b938a83d4",
+    "question": "Will the Nashville Predators win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-nashville-predators-win-the-2026-nhl-stanley-cup",
+    "liquidity": 126304.06082,
+    "volume_24h": 10198.51,
+    "current_probability": 0.3,
+    "previous_probability": 0.4,
+    "probability_delta_1h": -0.004166666666666667,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 210.96905405858658,
+    "score": 131.8651,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
