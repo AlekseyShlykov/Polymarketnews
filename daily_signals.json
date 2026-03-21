@@ -321,5 +321,22 @@
     "score": 73.6659,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0x6331a779482df72d904c3c1e12b6409ff836bc06f8c97945cba9b25ada2c605c",
+    "question": "Will the Portland Trail Blazers win the 2026 NBA Finals?",
+    "slug": "will-the-portland-trail-blazers-win-the-2026-nba-finals",
+    "liquidity": 988729.45779,
+    "volume_24h": 293377.4536429998,
+    "current_probability": 0.3,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": -3.4162219368574704,
+    "score": 3.1473,
+    "signal_type": "trending",
+    "why_matters": "This was one of the most actively traded markets of the day."
   }
 ]
