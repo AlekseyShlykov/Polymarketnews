@@ -117,5 +117,22 @@
     "score": 211.6017,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x08fa7d350c801391e7ec81d0da90f1fb05ec365f98d16d27e6d64a18d7118973",
+    "question": "Will the Washington Capitals win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-washington-capitals-win-the-2026-nhl-stanley-cup",
+    "liquidity": 114867.95896,
+    "volume_24h": 25912.369661,
+    "current_probability": 0.3,
+    "previous_probability": 0.5,
+    "probability_delta_1h": -0.1,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 294.2453708606907,
+    "score": 165.4088,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
