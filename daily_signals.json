@@ -168,5 +168,22 @@
     "score": 94.0908,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x3cec1aa0f2496c59cfcd2fd1270ce798e2d7de14ea55d6fdc747cc814a4b9262",
+    "question": "Will the Chicago Blackhawks win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-chicago-blackhawks-win-the-2026-nhl-stanley-cup",
+    "liquidity": 208871.91087,
+    "volume_24h": 25971.212999999996,
+    "current_probability": 0.1,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 91.96147674972435,
+    "score": 84.3258,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
