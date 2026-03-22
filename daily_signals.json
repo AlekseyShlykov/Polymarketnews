@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "condition_id": "0x99d0ce2ab858154ba1ec511863dae5a9fe41731457022cf2ef8b1024cf97405a",
+    "question": "Will the New York Islanders win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-new-york-islanders-win-the-2026-nhl-stanley-cup",
+    "liquidity": 160802.47193,
+    "volume_24h": 9939.391423,
+    "current_probability": 1.8,
+    "previous_probability": 1.8,
+    "probability_delta_1h": 0.1,
+    "delta_24h": -0.1,
+    "delta_6h": -0.025,
+    "delta_3h": -0.0125,
+    "volume_change_6h_pct": 76.86822735585677,
+    "score": 33.2184,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
+  }
+]
