@@ -219,5 +219,22 @@
     "score": 297.0054,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xe709dcb12986139fa5b4cc793069d0c64bde1bfb351914c95bdd6149ec91a3ee",
+    "question": "Will the New Orleans Pelicans win the 2026 NBA Finals?",
+    "slug": "will-the-new-orleans-pelicans-win-the-2026-nba-finals",
+    "liquidity": 1707927.54743,
+    "volume_24h": 6371.69,
+    "current_probability": 0.1,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 340.5327857518183,
+    "score": 138.4031,
+    "signal_type": "activity_spike",
+    "why_matters": "Trading activity accelerated sharply."
   }
 ]
