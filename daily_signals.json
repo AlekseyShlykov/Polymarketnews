@@ -202,5 +202,22 @@
     "score": 86.7279,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x375409bc5eeeff961e82b479caeccc20f33d15738e5bce1186d628aa3d9dfb1f",
+    "question": "Will England win the 2026 FIFA World Cup?",
+    "slug": "will-england-win-the-2026-fifa-world-cup-937",
+    "liquidity": 1393508.59325,
+    "volume_24h": 88210.302539,
+    "current_probability": 13.1,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 622.8962948185008,
+    "score": 297.0054,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
