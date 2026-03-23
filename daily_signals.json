@@ -168,5 +168,22 @@
     "score": 85.7644,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0xb23587fc1e319cdf9aaa12c503f6b2149c820c3d64ded3c98b4ff6719cac78fe",
+    "question": "Will Russia capture Kostyantynivka by June 30?",
+    "slug": "will-russia-capture-kostyantynivka-by-june-30-382-954",
+    "liquidity": 34123.0773,
+    "volume_24h": 10124.160267999998,
+    "current_probability": 70.0,
+    "previous_probability": 69.0,
+    "probability_delta_1h": 0.041666666666666664,
+    "delta_24h": 1.0,
+    "delta_6h": 0.25,
+    "delta_3h": 0.125,
+    "volume_change_6h_pct": 161.0104658458502,
+    "score": 113.4099,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
