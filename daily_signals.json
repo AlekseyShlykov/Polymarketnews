@@ -117,5 +117,22 @@
     "score": 208.0243,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x13e1cc703a120883a709d3bb29707097952845d61ca6793ea2b4328bae2a7451",
+    "question": "Will the Boston Celtics win the 2026 NBA Finals?",
+    "slug": "will-the-boston-celtics-win-the-2026-nba-finals",
+    "liquidity": 143973.83147,
+    "volume_24h": 18019.498999000007,
+    "current_probability": 11.3,
+    "previous_probability": 11.2,
+    "probability_delta_1h": 0.004166666666666667,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 146.589768431457,
+    "score": 106.2557,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
