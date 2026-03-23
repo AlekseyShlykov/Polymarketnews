@@ -49,5 +49,22 @@
     "score": 83.6352,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x9b3c3177fe473124c756b01e123b4b03e3a99880844ed8dea21b0a7879ca04aa",
+    "question": "Kraken IPO by March 31, 2026?",
+    "slug": "kraken-ipo-by-march-31-2026",
+    "liquidity": 24187.68531,
+    "volume_24h": 16080.763000000003,
+    "current_probability": 0.8,
+    "previous_probability": 1.3,
+    "probability_delta_1h": -0.020833333333333332,
+    "delta_24h": -0.5,
+    "delta_6h": -0.125,
+    "delta_3h": -0.0625,
+    "volume_change_6h_pct": 463.2968889131759,
+    "score": 233.5901,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
