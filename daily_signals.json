@@ -66,5 +66,22 @@
     "score": 233.5901,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x3a26ca6425e2d98f14935670bc22cdb0744defc6f6d83c65f8c413a921c5c70c",
+    "question": "Will Switzerland win the 2026 FIFA World Cup?",
+    "slug": "will-switzerland-win-the-2026-fifa-world-cup",
+    "liquidity": 640650.33462,
+    "volume_24h": 39019.192996,
+    "current_probability": 0.8,
+    "previous_probability": null,
+    "probability_delta_1h": null,
+    "delta_24h": null,
+    "delta_6h": 0.0,
+    "delta_3h": 0.0,
+    "volume_change_6h_pct": 76.17015500741877,
+    "score": 78.111,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
