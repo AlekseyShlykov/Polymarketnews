@@ -15,5 +15,22 @@
     "score": 175.1342,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x52847ca1413b76a5570b97c0c432e38dbe61b0140f9d45e912604591b08f6fca",
+    "question": "Will the Montreal Canadiens win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-montreal-canadiens-win-the-2026-nhl-stanley-cup",
+    "liquidity": 103377.51699,
+    "volume_24h": 17680.243426,
+    "current_probability": 3.1,
+    "previous_probability": 3.0,
+    "probability_delta_1h": -0.1,
+    "delta_24h": 0.1,
+    "delta_6h": 0.025,
+    "delta_3h": 0.0125,
+    "volume_change_6h_pct": 90.76975495752605,
+    "score": 83.923,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
