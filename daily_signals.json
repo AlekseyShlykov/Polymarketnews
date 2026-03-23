@@ -83,5 +83,22 @@
     "score": 128.6617,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x0d082a85f48a5226b1205acdb6e95ead2fe373acabcf6c471f5895f86f42a276",
+    "question": "Will the Minnesota Wild win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-minnesota-wild-win-the-2026-nhl-stanley-cup",
+    "liquidity": 177966.56782,
+    "volume_24h": 15963.476092999997,
+    "current_probability": 4.7,
+    "previous_probability": 4.4,
+    "probability_delta_1h": 0.3,
+    "delta_24h": 0.3,
+    "delta_6h": 0.075,
+    "delta_3h": 0.0375,
+    "volume_change_6h_pct": 70.63727938869863,
+    "score": 76.1844,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
