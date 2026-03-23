@@ -287,5 +287,22 @@
     "score": 89.2289,
     "signal_type": "market_disagreement",
     "why_matters": "Heavy trading activity did not resolve market disagreement."
+  },
+  {
+    "condition_id": "0x2307312887c6de01a9f55b7b7afc7c4a0be8718d7d868280e7d898f0ea54f740",
+    "question": "MegaETH market cap (FDV) >$3B one day after launch?",
+    "slug": "megaeth-market-cap-fdv-2b-one-day-after-launch-392-656-565-965-418-578-388",
+    "liquidity": 42165.89119,
+    "volume_24h": 13354.393577000003,
+    "current_probability": 7.2,
+    "previous_probability": 7.8,
+    "probability_delta_1h": -0.024999999999999998,
+    "delta_24h": -0.6,
+    "delta_6h": -0.15,
+    "delta_3h": -0.075,
+    "volume_change_6h_pct": 124.65833465457956,
+    "score": 98.2583,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
