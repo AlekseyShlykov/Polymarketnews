@@ -34,6 +34,13 @@ def main() -> None:
 
     mode = (os.environ.get("BOT_MODE") or "topic").strip().lower()
     topic = (os.environ.get("TOPIC") or "other").strip().lower()
+    data_window_hours_raw = (os.environ.get("DATA_WINDOW_HOURS") or "").strip()
+    data_window_hours = None
+    if data_window_hours_raw:
+        try:
+            data_window_hours = float(data_window_hours_raw)
+        except ValueError:
+            logger.warning("Invalid DATA_WINDOW_HOURS=%s, using default 24h mode.", data_window_hours_raw)
 
     if mode == "whale":
         alerts = detect_whale_alerts()
@@ -57,7 +64,7 @@ def main() -> None:
         sys.exit(1)
 
     try:
-        data = build_topic_brief_data(topic)
+        data = build_topic_brief_data(topic, window_hours=data_window_hours)
         text = format_topic_brief(data)
     except Exception as exc:
         logger.exception("Topic build failed: %s", exc)

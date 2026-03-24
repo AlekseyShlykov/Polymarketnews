@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
+import ast
 from typing import Any
 
 import requests
@@ -48,6 +49,49 @@ def _parse_token_ids(val: Any) -> list[str]:
     return []
 
 
+def _extract_tag_tokens(raw_tags: Any) -> list[str]:
+    """
+    Normalize Gamma tags to lowercase tokens (slug/label), skipping hidden tags.
+    Handles dict tags and stringified dict tags.
+    """
+    if not isinstance(raw_tags, list):
+        return []
+    out: list[str] = []
+    for tag in raw_tags:
+        obj = None
+        if isinstance(tag, dict):
+            obj = tag
+        elif isinstance(tag, str):
+            s = tag.strip()
+            if s.startswith("{") and s.endswith("}"):
+                try:
+                    obj = ast.literal_eval(s)
+                except (ValueError, SyntaxError):
+                    obj = None
+            if obj is None and s:
+                out.append(s.lower())
+                continue
+        if isinstance(obj, dict):
+            # Hidden tags often include broad buckets like politics and can misclassify.
+            if obj.get("forcehide") is True:
+                continue
+            slug = _safe_str(obj.get("slug")).lower()
+            label = _safe_str(obj.get("label")).lower()
+            if slug:
+                out.append(slug)
+            if label and label != slug:
+                out.append(label)
+    # de-duplicate preserving order
+    seen = set()
+    norm = []
+    for t in out:
+        if t in seen:
+            continue
+        seen.add(t)
+        norm.append(t)
+    return norm
+
+
 def fetch_events(limit: int = 150) -> list[dict]:
     """Fetch active, non-closed events from Gamma."""
     url = f"{config.POLYMARKET_GAMMA_URL}/events?limit={limit}&active=true&closed=false"
@@ -77,7 +121,7 @@ def event_to_markets(event: dict) -> list[dict]:
     markets_raw = event.get("markets")
     event_category = _safe_str(event.get("category"))
     event_subcategory = _safe_str(event.get("subcategory"))
-    event_tags = event.get("tags") if isinstance(event.get("tags"), list) else []
+    event_tags = _extract_tag_tokens(event.get("tags"))
     if not isinstance(markets_raw, list):
         return out
     for m in markets_raw:
@@ -138,8 +182,8 @@ def event_to_markets(event: dict) -> list[dict]:
                     created_ts = dt.fromisoformat(str(created_raw).replace("Z", "+00:00")).timestamp()
             except (ValueError, TypeError, OSError):
                 pass
-        market_tags = m.get("tags") if isinstance(m.get("tags"), list) else []
-        tags = [str(t).strip().lower() for t in [*event_tags, *market_tags] if str(t).strip()]
+        market_tags = _extract_tag_tokens(m.get("tags"))
+        tags = [t for t in [*event_tags, *market_tags] if t]
         category = _safe_str(m.get("category") or event_category).lower()
         subcategory = _safe_str(m.get("subcategory") or event_subcategory).lower()
         out.append({

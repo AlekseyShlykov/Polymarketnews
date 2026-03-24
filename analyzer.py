@@ -86,10 +86,16 @@ def classify_topic(market: dict) -> str:
     subcategory = str(market.get("subcategory") or "").lower()
     tags = [str(t).lower() for t in (market.get("tags") or [])]
     haystack = " ".join([category, subcategory, " ".join(tags)])
+    tag_set = set(tags)
 
     politics_keys = ["politics", "election", "government", "geopolit", "legislation", "leader", "war", "diplom"]
     economy_keys = ["economy", "macro", "inflation", "recession", "fed", "rate", "finance", "crypto", "stock", "commodit"]
     sports_keys = ["sport", "soccer", "football", "nba", "nfl", "tennis", "baseball", "hockey"]
+    other_override_tags = {"culture", "pop-culture", "music", "movies", "entertainment", "gta-vi", "celebrity"}
+
+    # If a market is clearly culture/entertainment, prefer Other.
+    if tag_set.intersection(other_override_tags):
+        return TOPIC_OTHER
 
     if any(k in haystack for k in politics_keys):
         return TOPIC_POLITICS
@@ -130,7 +136,22 @@ def _dedupe_near_duplicates(markets: list[dict]) -> list[dict]:
     return out
 
 
-def build_topic_brief_data(topic: str, max_markets: int | None = None) -> dict:
+def _is_recent_market(market: dict, window_hours: float) -> bool:
+    created_ts = market.get("created_at_timestamp")
+    if created_ts:
+        age_hours = (datetime.now(timezone.utc).timestamp() - float(created_ts)) / 3600.0
+        if age_hours <= window_hours:
+            return True
+    # Gamma does not provide a reliable 2h delta, so we use 1h move as a recency proxy.
+    one_h = abs(_safe_float(market.get("probability_delta_1h")))
+    return one_h >= 0.2
+
+
+def build_topic_brief_data(
+    topic: str,
+    max_markets: int | None = None,
+    window_hours: float | None = None,
+) -> dict:
     """
     Build structured payload for one topic over last 24h.
     """
@@ -139,13 +160,24 @@ def build_topic_brief_data(topic: str, max_markets: int | None = None) -> dict:
     for m in markets:
         if classify_topic(m) != topic:
             continue
+        if window_hours and window_hours > 0 and not _is_recent_market(m, window_hours):
+            continue
         liq = _safe_float(m.get("liquidity"))
         vol24 = _safe_float(m.get("volume_24h") or m.get("volume"))
         if liq < config.TOPIC_MIN_LIQUIDITY or vol24 < config.TOPIC_MIN_VOLUME_24H:
             continue
         if m.get("delta_24h") is None:
             continue
-        topic_rows.append({**m, "liquidity": liq, "volume_24h": vol24})
+        row = {**m, "liquidity": liq, "volume_24h": vol24}
+        if window_hours and window_hours > 0:
+            one_h = _safe_float(m.get("probability_delta_1h"))
+            delta_period = round(one_h * window_hours, 1)
+            current = _safe_float(m.get("current_probability"))
+            prev = round(current - delta_period, 1)
+            row["display_delta"] = delta_period
+            row["display_previous_probability"] = prev
+            row["period_label"] = f"{int(window_hours)} часа"
+        topic_rows.append(row)
 
     if not topic_rows:
         # still return compact fallback built from strongest available by liquidity.
@@ -182,6 +214,7 @@ def build_topic_brief_data(topic: str, max_markets: int | None = None) -> dict:
         "top_markets": top3,
         "biggest_move": biggest_move,
         "most_active": most_active,
+        "period_label": top3[0].get("period_label") if top3 else "24 часа",
     }
 
 

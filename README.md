@@ -15,7 +15,7 @@ Each post contains:
 - biggest move in 24h
 - most active market in 24h
 
-## Whale alerts
+## Whale alerts   
 
 Separate checks run every 20 minutes. If detected amount is above `$100,000` in the latest interval, the bot posts a standalone alert.
 
@@ -41,4 +41,12 @@ Examples:
 ```bash
 BOT_MODE=topic TOPIC=politics python main.py
 BOT_MODE=whale python main.py
+BOT_MODE=topic TOPIC=politics DATA_WINDOW_HOURS=2 python main.py
 ```
+
+## Push test mode
+
+On every push to `main`, GitHub Actions sends 4 test posts (politics/economy/sports/other) with a 2-hour data window:
+- `BOT_MODE=topic`
+- `TOPIC=<topic>`
+- `DATA_WINDOW_HOURS=2`

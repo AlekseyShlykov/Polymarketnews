@@ -7,7 +7,7 @@ from __future__ import annotations
 import re
 from datetime import datetime, timezone
 
-from gemini_client import build_topic_intro_with_gemini
+from gemini_client import build_topic_intro_with_gemini, translate_market_questions_to_russian
 
 
 def format_number(val: float | None) -> str:
@@ -316,6 +316,7 @@ def format_topic_brief(data: dict) -> str:
     top = data.get("top_markets") or []
     biggest = data.get("biggest_move") or {}
     most_active = data.get("most_active") or {}
+    period_label = data.get("period_label") or "24 часа"
 
     gemini_payload = {
         "top_markets": [
@@ -344,24 +345,40 @@ def format_topic_brief(data: dict) -> str:
             "Ниже — рынки с самой высокой уверенностью, заметным движением и наибольшим объемом за сутки."
         )
 
+    # Translate market titles to Russian for final Telegram readability.
+    source_questions = []
+    for m in top[:3]:
+        q = _clean_text(m.get("question"))
+        if q != "Unknown":
+            source_questions.append(q)
+    for extra in (biggest, most_active):
+        q = _clean_text(extra.get("question"))
+        if q != "Unknown":
+            source_questions.append(q)
+    q_map = translate_market_questions_to_russian(source_questions)
+
     lines = [f"Polymarket — {topic_ru}", "", "Что считает рынок:", intro, ""]
     for idx, m in enumerate(top[:3], 1):
-        q = _clean_text(m.get("question"))
-        old_p = _fmt_pct(m.get("previous_probability"))
+        src_q = _clean_text(m.get("question"))
+        q = q_map.get(src_q, src_q)
+        old_p = _fmt_pct(m.get("display_previous_probability", m.get("previous_probability")))
         new_p = _fmt_pct(m.get("current_probability"))
         lines.append(f"{idx}. {q}")
         lines.append(f"Вероятность: {new_p}")
-        lines.append(f"За 24 часа: {old_p} → {new_p}")
+        lines.append(f"За {period_label}: {old_p} → {new_p}")
         lines.append("")
 
     if biggest:
         lines.append("Самое сильное движение за день:")
-        lines.append(f"{_clean_text(biggest.get('question'))} — {format_number(biggest.get('delta_24h'))} п.п.")
+        biggest_delta = biggest.get("display_delta", biggest.get("delta_24h"))
+        src_q = _clean_text(biggest.get("question"))
+        lines.append(f"{q_map.get(src_q, src_q)} — {format_number(biggest_delta)} п.п.")
         lines.append("")
     if most_active:
         lines.append("Самый активный рынок:")
+        src_q = _clean_text(most_active.get("question"))
         lines.append(
-            f"{_clean_text(most_active.get('question'))} — {_fmt_usd(most_active.get('volume_24h'))} объема за 24 ч"
+            f"{q_map.get(src_q, src_q)} — {_fmt_usd(most_active.get('volume_24h'))} объема за 24 ч"
         )
     return "\n".join(lines).strip()
 

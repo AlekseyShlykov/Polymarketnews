@@ -69,3 +69,59 @@ def build_topic_intro_with_gemini(topic_title_ru: str, payload: dict) -> str | N
     except Exception as exc:  # noqa: BLE001 - do not break the bot on LLM failures.
         logger.warning("Gemini intro generation failed: %s", exc)
         return None
+
+
+def translate_market_questions_to_russian(questions: list[str]) -> dict[str, str]:
+    """
+    Translate market questions to Russian with strict meaning preservation.
+    Returns mapping original->translated (fallback to original on any failure).
+    """
+    cleaned = [q.strip() for q in questions if isinstance(q, str) and q.strip()]
+    if not cleaned:
+        return {}
+    mapping = {q: q for q in cleaned}
+    if not config.GEMINI_API_KEY:
+        return mapping
+
+    prompt = (
+        "Переведи вопросы рынков с английского на русский.\n"
+        "Важно: сохраняй исходный смысл, даты, имена, тикеры, числа без изменений.\n"
+        "Не добавляй объяснений. Верни JSON-массив строк в том же порядке.\n"
+        f"Вопросы: {cleaned}\n"
+    )
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{config.GEMINI_MODEL}:generateContent?key={config.GEMINI_API_KEY}"
+    )
+    req_body = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.0, "maxOutputTokens": 600},
+    }
+    try:
+        resp = requests.post(url, json=req_body, timeout=config.GEMINI_TIMEOUT_SECONDS)
+        resp.raise_for_status()
+        body = resp.json()
+        candidates = body.get("candidates") or []
+        if not candidates:
+            return mapping
+        parts = (((candidates[0] or {}).get("content") or {}).get("parts")) or []
+        text = " ".join((p.get("text") or "").strip() for p in parts if isinstance(p, dict)).strip()
+        if not text:
+            return mapping
+        # Extract JSON array robustly (model may wrap with markdown fences).
+        text = text.replace("```json", "").replace("```", "").strip()
+        start = text.find("[")
+        end = text.rfind("]")
+        if start == -1 or end == -1 or end <= start:
+            return mapping
+        import json
+        parsed = json.loads(text[start : end + 1])
+        if not isinstance(parsed, list) or len(parsed) != len(cleaned):
+            return mapping
+        for src, tr in zip(cleaned, parsed):
+            if isinstance(tr, str) and tr.strip():
+                mapping[src] = tr.strip()
+        return mapping
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Gemini translation failed: %s", exc)
+        return mapping

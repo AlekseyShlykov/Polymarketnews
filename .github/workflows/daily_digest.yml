@@ -2,6 +2,9 @@
 name: Polymarket editorial bot
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     - cron: "0 8 * * *"   # politics
     - cron: "0 10 * * *"  # economy
@@ -11,7 +14,34 @@ on:
   workflow_dispatch:
 
 jobs:
+  push_test_topics:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        topic: [politics, economy, sports, other]
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Send push test topic post
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BOT_MODE: topic
+          TOPIC: ${{ matrix.topic }}
+          DATA_WINDOW_HOURS: "2"
+        run: python main.py
+
   post:
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
