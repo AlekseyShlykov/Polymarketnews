@@ -100,5 +100,22 @@
     "score": 73.544,
     "signal_type": "market_trend",
     "why_matters": "The market moved steadily over the course of the day."
+  },
+  {
+    "condition_id": "0x7014b40f62a559be0a0abd2bf1ca1ef16e44674b2c505bb5243c752f2e0d351f",
+    "question": "Will the Detroit Red Wings win the 2026 NHL Stanley Cup?",
+    "slug": "will-the-detroit-red-wings-win-the-2026-nhl-stanley-cup",
+    "liquidity": 138653.33715,
+    "volume_24h": 12951.456488,
+    "current_probability": 1.1,
+    "previous_probability": 0.9,
+    "probability_delta_1h": 0.1,
+    "delta_24h": 0.2,
+    "delta_6h": 0.05,
+    "delta_3h": 0.025,
+    "volume_change_6h_pct": 239.0214979160809,
+    "score": 143.3159,
+    "signal_type": "market_disagreement",
+    "why_matters": "Heavy trading activity did not resolve market disagreement."
   }
 ]
