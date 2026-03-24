@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 import re
+from typing import List
 
 import requests
 
@@ -83,11 +84,14 @@ def translate_market_questions_to_russian(questions: list[str]) -> dict[str, str
     if not config.GEMINI_API_KEY:
         return mapping
 
+    prompt_lines = "\n".join([f"{i+1}) {q}" for i, q in enumerate(cleaned)])
     prompt = (
         "Переведи вопросы рынков с английского на русский.\n"
-        "Важно: сохраняй исходный смысл, даты, имена, тикеры, числа без изменений.\n"
-        "Не добавляй объяснений. Верни JSON-массив строк в том же порядке.\n"
-        f"Вопросы: {cleaned}\n"
+        "Сохраняй имена, даты, тикеры и числа.\n"
+        "Никаких объяснений.\n"
+        "Формат ответа строго построчно:\n"
+        "1) <перевод>\n2) <перевод>\n...\n\n"
+        f"{prompt_lines}\n"
     )
     url = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
@@ -108,20 +112,36 @@ def translate_market_questions_to_russian(questions: list[str]) -> dict[str, str
         text = " ".join((p.get("text") or "").strip() for p in parts if isinstance(p, dict)).strip()
         if not text:
             return mapping
-        # Extract JSON array robustly (model may wrap with markdown fences).
-        text = text.replace("```json", "").replace("```", "").strip()
-        start = text.find("[")
-        end = text.rfind("]")
-        if start == -1 or end == -1 or end <= start:
-            return mapping
-        import json
-        parsed = json.loads(text[start : end + 1])
-        if not isinstance(parsed, list) or len(parsed) != len(cleaned):
-            return mapping
+        text = text.replace("```", "").strip()
+        lines: List[str] = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        parsed: list[str] = []
+        for line in lines:
+            m = re.match(r"^\d+\)\s*(.+)$", line)
+            if m:
+                parsed.append(m.group(1).strip())
+        if len(parsed) != len(cleaned):
+            return _fallback_translate_mapping(mapping)
         for src, tr in zip(cleaned, parsed):
             if isinstance(tr, str) and tr.strip():
                 mapping[src] = tr.strip()
         return mapping
     except Exception as exc:  # noqa: BLE001
         logger.warning("Gemini translation failed: %s", exc)
-        return mapping
+        return _fallback_translate_mapping(mapping)
+
+
+def _fallback_translate_mapping(mapping: dict[str, str]) -> dict[str, str]:
+    """
+    Deterministic fallback to avoid raw English questions in posts.
+    """
+    out = dict(mapping)
+    for src in list(out.keys()):
+        q = src.strip()
+        low = q.lower()
+        if low.startswith("will ") and q.endswith("?"):
+            out[src] = f"Произойдет ли {q[5:-1].strip()}?"
+        elif low.endswith(" convicted?"):
+            out[src] = q[:-1].replace(" convicted", " будет признан виновным") + "?"
+        else:
+            out[src] = q
+    return out

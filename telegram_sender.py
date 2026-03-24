@@ -17,7 +17,12 @@ def send_telegram(text: str) -> bool:
         logger.error("TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set")
         return False
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {"chat_id": chat_id, "text": text, "disable_web_page_preview": True}
+    payload = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True,
+    }
     try:
         r = requests.post(url, json=payload, timeout=config.REQUEST_TIMEOUT_SECONDS)
         body = r.json() if r.text else {}

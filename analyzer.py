@@ -174,6 +174,7 @@ def build_topic_brief_data(
             delta_period = round(one_h * window_hours, 1)
             current = _safe_float(m.get("current_probability"))
             prev = round(current - delta_period, 1)
+            prev = max(0.0, min(100.0, prev))
             row["display_delta"] = delta_period
             row["display_previous_probability"] = prev
             row["period_label"] = f"{int(window_hours)} часа"

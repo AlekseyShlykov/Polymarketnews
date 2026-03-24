@@ -5,6 +5,7 @@ Never post empty or "nothing happened" messages — no-signal case is handled by
 from __future__ import annotations
 
 import re
+from html import escape
 from datetime import datetime, timezone
 
 from gemini_client import build_topic_intro_with_gemini, translate_market_questions_to_russian
@@ -39,6 +40,14 @@ def _clean_text(val: str | None) -> str:
     txt = str(val).replace("\u200b", "").replace("\ufeff", "")
     txt = re.sub(r"\s+", " ", txt).strip()
     return txt or "Unknown"
+
+
+def _clickable_question(question: str, slug: str | None) -> str:
+    q = escape(_clean_text(question))
+    link = _market_url(slug or "")
+    if not link:
+        return q
+    return f'<a href="{escape(link, quote=True)}">{q}</a>'
 
 
 def format_hourly_market_shock(signal: dict) -> str:
@@ -302,7 +311,13 @@ def format_digest(items: list[dict], use_fallback: bool = False) -> str:
 
 
 def _fmt_pct(val: float | None) -> str:
-    return f"{format_number(val)}%"
+    if val is None:
+        return "—"
+    try:
+        v = max(0.0, min(100.0, float(val)))
+    except (TypeError, ValueError):
+        return "—"
+    return f"{format_number(v)}%"
 
 
 def _fmt_usd(val: float | None) -> str:
@@ -360,7 +375,7 @@ def format_topic_brief(data: dict) -> str:
     lines = [f"Polymarket — {topic_ru}", "", "Что считает рынок:", intro, ""]
     for idx, m in enumerate(top[:3], 1):
         src_q = _clean_text(m.get("question"))
-        q = q_map.get(src_q, src_q)
+        q = _clickable_question(q_map.get(src_q, src_q), m.get("slug"))
         old_p = _fmt_pct(m.get("display_previous_probability", m.get("previous_probability")))
         new_p = _fmt_pct(m.get("current_probability"))
         lines.append(f"{idx}. {q}")
@@ -372,13 +387,15 @@ def format_topic_brief(data: dict) -> str:
         lines.append("Самое сильное движение за день:")
         biggest_delta = biggest.get("display_delta", biggest.get("delta_24h"))
         src_q = _clean_text(biggest.get("question"))
-        lines.append(f"{q_map.get(src_q, src_q)} — {format_number(biggest_delta)} п.п.")
+        bq = _clickable_question(q_map.get(src_q, src_q), biggest.get("slug"))
+        lines.append(f"{bq} — {format_number(biggest_delta)} п.п.")
         lines.append("")
     if most_active:
         lines.append("Самый активный рынок:")
         src_q = _clean_text(most_active.get("question"))
+        mq = _clickable_question(q_map.get(src_q, src_q), most_active.get("slug"))
         lines.append(
-            f"{q_map.get(src_q, src_q)} — {_fmt_usd(most_active.get('volume_24h'))} объема за 24 ч"
+            f"{mq} — {_fmt_usd(most_active.get('volume_24h'))} объема за 24 ч"
         )
     return "\n".join(lines).strip()
 
