@@ -15,6 +15,7 @@ if _env_path.exists():
 # Required for sending
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
 # Polymarket
 POLYMARKET_GAMMA_URL = "https://gamma-api.polymarket.com"
@@ -49,3 +50,23 @@ TOP_MOVES_DAILY_COUNT = 5
 MIN_LIQUIDITY = 500.0
 MIN_ABS_DELTA_24H = 5.0
 MAX_ITEMS_IN_DIGEST = 10
+
+# Editorial topic briefs
+TOPIC_MIN_LIQUIDITY = 1000.0
+TOPIC_MIN_VOLUME_24H = 3000.0
+TOPIC_TOP_MARKETS = 3
+TOPIC_MOVED_MAX = 1
+
+# Simple, robust importance score weights.
+IMPORTANCE_W_VOLUME = 0.45
+IMPORTANCE_W_LIQUIDITY = 0.25
+IMPORTANCE_W_DELTA = 0.20
+IMPORTANCE_W_RECENCY = 0.10
+
+# Whale alerts
+WHALE_BET_USD_THRESHOLD = 100000.0
+WHALE_ALERTS_PATH = _ROOT / "whale_alerts.json"
+
+# Gemini
+GEMINI_MODEL = "gemini-1.5-flash"
+GEMINI_TIMEOUT_SECONDS = 20

@@ -4,7 +4,10 @@ Never post empty or "nothing happened" messages — no-signal case is handled by
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
+
+from gemini_client import build_topic_intro_with_gemini
 
 
 def format_number(val: float | None) -> str:
@@ -24,9 +27,23 @@ def _market_url(slug: str) -> str:
     return f"https://polymarket.com/event/{slug}" if (slug or "").strip() else ""
 
 
+def _clean_text(val: str | None) -> str:
+    """
+    Normalize question text for Telegram:
+    - remove line breaks/tabs
+    - collapse repeated whitespace
+    - strip zero-width/BOM chars that can break rendering
+    """
+    if not val:
+        return "Unknown"
+    txt = str(val).replace("\u200b", "").replace("\ufeff", "")
+    txt = re.sub(r"\s+", " ", txt).strip()
+    return txt or "Unknown"
+
+
 def format_hourly_market_shock(signal: dict) -> str:
     """Market shock — very sharp repricing in short period."""
-    q = (signal.get("question") or "Unknown").strip()
+    q = _clean_text(signal.get("question"))
     old_p = format_number(signal.get("previous_probability"))
     new_p = format_number(signal.get("current_probability"))
     delta_6h = signal.get("delta_6h")
@@ -58,7 +75,7 @@ def format_hourly_market_shock(signal: dict) -> str:
 
 def format_hourly_market_trend(signal: dict) -> str:
     """Market trend — steady move over 24h."""
-    q = (signal.get("question") or "Unknown").strip()
+    q = _clean_text(signal.get("question"))
     old_p = format_number(signal.get("previous_probability"))
     new_p = format_number(signal.get("current_probability"))
     delta = signal.get("delta_24h")
@@ -86,7 +103,7 @@ def format_hourly_market_trend(signal: dict) -> str:
 
 def format_hourly_market_disagreement(signal: dict) -> str:
     """Market disagreement — heavy trading, little price move."""
-    q = (signal.get("question") or "Unknown").strip()
+    q = _clean_text(signal.get("question"))
     old_p = format_number(signal.get("previous_probability"))
     new_p = format_number(signal.get("current_probability"))
     delta_6h = signal.get("delta_6h")
@@ -112,7 +129,7 @@ def format_hourly_market_disagreement(signal: dict) -> str:
 
 def format_hourly_repricing(signal: dict) -> str:
     """News-style: market repricing — odds moved sharply."""
-    q = (signal.get("question") or "Unknown").strip()
+    q = _clean_text(signal.get("question"))
     old_p = format_number(signal.get("previous_probability"))
     new_p = format_number(signal.get("current_probability"))
     delta_6h = signal.get("delta_6h")
@@ -140,7 +157,7 @@ def format_hourly_repricing(signal: dict) -> str:
 
 def format_hourly_activity_spike(signal: dict) -> str:
     """News-style: activity spike — trading jumped."""
-    q = (signal.get("question") or "Unknown").strip()
+    q = _clean_text(signal.get("question"))
     old_p = format_number(signal.get("previous_probability"))
     new_p = format_number(signal.get("current_probability"))
     vol = format_number(signal.get("volume_24h"))
@@ -164,7 +181,7 @@ def format_hourly_activity_spike(signal: dict) -> str:
 
 def format_hourly_trending(signal: dict) -> str:
     """News-style: most active market today."""
-    q = (signal.get("question") or "Unknown").strip()
+    q = _clean_text(signal.get("question"))
     p = format_number(signal.get("current_probability"))
     vol = format_number(signal.get("volume_24h"))
     liq = format_number(signal.get("liquidity"))
@@ -205,7 +222,7 @@ def format_top_moves_section(moves: list[dict]) -> str:
         return ""
     lines = ["Top moves today", ""]
     for i, row in enumerate(moves, 1):
-        q = (row.get("question") or "Unknown").strip()
+        q = _clean_text(row.get("question"))
         delta = row.get("delta_24h")
         if delta is not None:
             lines.append(f"{i}. {q} — {delta:+.1f} pp")
@@ -240,7 +257,7 @@ def format_daily_digest(
         lines.append("No signals met the threshold for the last 24 hours.")
     else:
         for i, row in enumerate(top_signals[:6], 1):
-            q = (row.get("question") or "Unknown").strip()
+            q = _clean_text(row.get("question"))
             old_p = format_number(row.get("previous_probability"))
             new_p = format_number(row.get("current_probability"))
             delta_24h = row.get("delta_24h")
@@ -271,7 +288,7 @@ def format_digest(items: list[dict], use_fallback: bool = False) -> str:
         )
     lines = [f"Polymarket Daily Digest — {date_str}\n", "Top moves in the last 24h:\n"]
     for i, row in enumerate(items, 1):
-        q = (row.get("question") or "Unknown").strip()
+        q = _clean_text(row.get("question"))
         old_p = format_number(row.get("previous_probability"))
         new_p = format_number(row.get("current_probability"))
         delta = row.get("delta_24h")
@@ -281,4 +298,90 @@ def format_digest(items: list[dict], use_fallback: bool = False) -> str:
         lines.append(f"{i}. {q}")
         lines.append(f"{old_p}% → {new_p}%{delta_str}")
         lines.append(f"Liquidity: {liq}  Volume: {vol}\n")
+    return "\n".join(lines).strip()
+
+
+def _fmt_pct(val: float | None) -> str:
+    return f"{format_number(val)}%"
+
+
+def _fmt_usd(val: float | None) -> str:
+    if val is None:
+        return "—"
+    return f"${int(float(val)):,}".replace(",", " ")
+
+
+def format_topic_brief(data: dict) -> str:
+    topic_ru = data.get("topic_ru") or "Другое"
+    top = data.get("top_markets") or []
+    biggest = data.get("biggest_move") or {}
+    most_active = data.get("most_active") or {}
+
+    gemini_payload = {
+        "top_markets": [
+            {
+                "question": m.get("question"),
+                "probability": m.get("current_probability"),
+                "delta_24h": m.get("delta_24h"),
+                "volume_24h": m.get("volume_24h"),
+            }
+            for m in top[:3]
+        ],
+        "biggest_move": {
+            "question": biggest.get("question"),
+            "delta_24h": biggest.get("delta_24h"),
+        },
+        "most_active": {
+            "question": most_active.get("question"),
+            "volume_24h": most_active.get("volume_24h"),
+        },
+    }
+    # Gemini is used only as style rewrite. On any failure we use deterministic template text.
+    intro = build_topic_intro_with_gemini(topic_ru, gemini_payload)
+    if not intro:
+        intro = (
+            f"По теме «{topic_ru}» рынок сейчас выделяет несколько ключевых сценариев. "
+            "Ниже — рынки с самой высокой уверенностью, заметным движением и наибольшим объемом за сутки."
+        )
+
+    lines = [f"Polymarket — {topic_ru}", "", "Что считает рынок:", intro, ""]
+    for idx, m in enumerate(top[:3], 1):
+        q = _clean_text(m.get("question"))
+        old_p = _fmt_pct(m.get("previous_probability"))
+        new_p = _fmt_pct(m.get("current_probability"))
+        lines.append(f"{idx}. {q}")
+        lines.append(f"Вероятность: {new_p}")
+        lines.append(f"За 24 часа: {old_p} → {new_p}")
+        lines.append("")
+
+    if biggest:
+        lines.append("Самое сильное движение за день:")
+        lines.append(f"{_clean_text(biggest.get('question'))} — {format_number(biggest.get('delta_24h'))} п.п.")
+        lines.append("")
+    if most_active:
+        lines.append("Самый активный рынок:")
+        lines.append(
+            f"{_clean_text(most_active.get('question'))} — {_fmt_usd(most_active.get('volume_24h'))} объема за 24 ч"
+        )
+    return "\n".join(lines).strip()
+
+
+def format_whale_alert(alert: dict) -> str:
+    q = _clean_text(alert.get("question"))
+    amount = _fmt_usd(alert.get("amount"))
+    p = _fmt_pct(alert.get("current_probability"))
+    liq = _fmt_usd(alert.get("liquidity"))
+    slug = (alert.get("slug") or "").strip()
+    link = _market_url(slug)
+    lines = [
+        "🐋 Крупная ставка на Polymarket",
+        "",
+        f"{amount} на рынке:",
+        q,
+        "",
+        f"Текущая вероятность: {p}",
+        f"Ликвидность: {liq}",
+    ]
+    if link:
+        lines += ["", link]
     return "\n".join(lines).strip()

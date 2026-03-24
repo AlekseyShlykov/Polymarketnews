@@ -75,6 +75,9 @@ def event_to_markets(event: dict) -> list[dict]:
     out = []
     title = _safe_str(event.get("title") or event.get("question"))
     markets_raw = event.get("markets")
+    event_category = _safe_str(event.get("category"))
+    event_subcategory = _safe_str(event.get("subcategory"))
+    event_tags = event.get("tags") if isinstance(event.get("tags"), list) else []
     if not isinstance(markets_raw, list):
         return out
     for m in markets_raw:
@@ -135,6 +138,10 @@ def event_to_markets(event: dict) -> list[dict]:
                     created_ts = dt.fromisoformat(str(created_raw).replace("Z", "+00:00")).timestamp()
             except (ValueError, TypeError, OSError):
                 pass
+        market_tags = m.get("tags") if isinstance(m.get("tags"), list) else []
+        tags = [str(t).strip().lower() for t in [*event_tags, *market_tags] if str(t).strip()]
+        category = _safe_str(m.get("category") or event_category).lower()
+        subcategory = _safe_str(m.get("subcategory") or event_subcategory).lower()
         out.append({
             "question": question or "Unknown",
             "slug": slug,
@@ -147,6 +154,9 @@ def event_to_markets(event: dict) -> list[dict]:
             "delta_24h": round(delta_24h, 1) if delta_24h is not None else None,
             "probability_delta_1h": round(probability_delta_1h, 1) if probability_delta_1h is not None else None,
             "created_at_timestamp": created_ts,
+            "category": category,
+            "subcategory": subcategory,
+            "tags": tags,
         })
     return out
 

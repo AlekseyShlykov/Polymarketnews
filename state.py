@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 _ROOT = Path(__file__).resolve().parent
 STATE_PATH = _ROOT / "state.json"
 DAILY_SIGNALS_PATH = _ROOT / "daily_signals.json"
+WHALE_ALERTS_PATH = _ROOT / "whale_alerts.json"
 
 # Cooldown: do not post same market again within this many hours
 COOLDOWN_HOURS = 12
@@ -233,3 +234,28 @@ def get_top_moves_for_digest(daily_signals: list, max_items: int = 5) -> list[di
 def clear_daily_signals_for_new_day() -> None:
     """After sending daily digest, clear so next day starts fresh."""
     save_daily_signals([])
+
+
+def load_whale_alerts() -> dict:
+    """whale_alerts.json: alerted ids map."""
+    raw = load_json(WHALE_ALERTS_PATH, {})
+    return raw if isinstance(raw, dict) else {}
+
+
+def save_whale_alerts(data: dict) -> None:
+    save_json(WHALE_ALERTS_PATH, data)
+
+
+def is_whale_alerted(alert_id: str) -> bool:
+    alerts = load_whale_alerts()
+    return bool(alerts.get(alert_id))
+
+
+def mark_whale_alerted(alert_id: str) -> None:
+    alerts = load_whale_alerts()
+    alerts[alert_id] = _now_utc().isoformat()
+    # keep file small
+    if len(alerts) > 5000:
+        items = sorted(alerts.items(), key=lambda x: x[1], reverse=True)[:3000]
+        alerts = dict(items)
+    save_whale_alerts(alerts)

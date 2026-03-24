@@ -1,18 +1,20 @@
-# Hourly signal + daily digest at 18:00 UTC.
-# Runs every hour; at 18:00 UTC also sends the daily digest.
-name: Polymarket bot
+# Editorial topic briefs + whale alerts.
+name: Polymarket editorial bot
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 8 * * *"   # politics
+    - cron: "0 10 * * *"  # economy
+    - cron: "0 12 * * *"  # sports
+    - cron: "0 14 * * *"  # other
+    - cron: "*/30 * * * *"  # whale check every 30 min
   workflow_dispatch:
 
 jobs:
-  run:
+  post:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Use Node.js 24 for JS actions (checkout, setup-python); Node 20 is deprecated on runners
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
@@ -26,31 +28,45 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Set UTC hour
-        id: utc
-        run: echo "hour=$(date -u +%H)" >> $GITHUB_OUTPUT
+      - name: Set run mode from UTC hour
+        id: mode
+        run: |
+          MINUTE=$(date -u +%M)
+          HOUR=$(date -u +%H)
+          if [ "$MINUTE" = "00" ] && [ "$HOUR" = "08" ]; then
+            echo "bot_mode=topic" >> $GITHUB_OUTPUT
+            echo "topic=politics" >> $GITHUB_OUTPUT
+          elif [ "$MINUTE" = "00" ] && [ "$HOUR" = "10" ]; then
+            echo "bot_mode=topic" >> $GITHUB_OUTPUT
+            echo "topic=economy" >> $GITHUB_OUTPUT
+          elif [ "$MINUTE" = "00" ] && [ "$HOUR" = "12" ]; then
+            echo "bot_mode=topic" >> $GITHUB_OUTPUT
+            echo "topic=sports" >> $GITHUB_OUTPUT
+          elif [ "$MINUTE" = "00" ] && [ "$HOUR" = "14" ]; then
+            echo "bot_mode=topic" >> $GITHUB_OUTPUT
+            echo "topic=other" >> $GITHUB_OUTPUT
+          else
+            echo "bot_mode=whale" >> $GITHUB_OUTPUT
+            echo "topic=other" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Run hourly signal
+      - name: Run bot
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python main_hourly.py
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BOT_MODE: ${{ steps.mode.outputs.bot_mode }}
+          TOPIC: ${{ steps.mode.outputs.topic }}
+        run: python main.py
 
-      - name: Run daily digest (18:00 UTC only)
-        if: steps.utc.outputs.hour == '18'
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python main_daily.py
-
-      - name: Persist state
+      - name: Persist whale alert state
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add state.json daily_signals.json 2>/dev/null || true
+          git add whale_alerts.json 2>/dev/null || true
           if git diff --staged --quiet; then
-            echo "No state changes to commit"
+            echo "No whale state changes"
           else
-            git commit -m "chore: persist bot state"
+            git commit -m "chore: persist whale alerts state"
             git push
           fi
