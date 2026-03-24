@@ -237,9 +237,16 @@ def clear_daily_signals_for_new_day() -> None:
 
 
 def load_whale_alerts() -> dict:
-    """whale_alerts.json: alerted ids map."""
+    """whale_alerts.json storage with backward compatibility."""
     raw = load_json(WHALE_ALERTS_PATH, {})
-    return raw if isinstance(raw, dict) else {}
+    if not isinstance(raw, dict):
+        return {"alerted": {}, "last_volume_24h": {}, "last_checked_at": None}
+    # Backward compatibility: old format was plain {alert_id: timestamp}
+    if "alerted" not in raw:
+        return {"alerted": dict(raw), "last_volume_24h": {}, "last_checked_at": None}
+    raw.setdefault("last_volume_24h", {})
+    raw.setdefault("last_checked_at", None)
+    return raw
 
 
 def save_whale_alerts(data: dict) -> None:
@@ -247,15 +254,37 @@ def save_whale_alerts(data: dict) -> None:
 
 
 def is_whale_alerted(alert_id: str) -> bool:
-    alerts = load_whale_alerts()
-    return bool(alerts.get(alert_id))
+    data = load_whale_alerts()
+    return bool((data.get("alerted") or {}).get(alert_id))
 
 
 def mark_whale_alerted(alert_id: str) -> None:
-    alerts = load_whale_alerts()
-    alerts[alert_id] = _now_utc().isoformat()
+    data = load_whale_alerts()
+    alerted = dict(data.get("alerted") or {})
+    alerted[alert_id] = _now_utc().isoformat()
     # keep file small
-    if len(alerts) > 5000:
-        items = sorted(alerts.items(), key=lambda x: x[1], reverse=True)[:3000]
-        alerts = dict(items)
-    save_whale_alerts(alerts)
+    if len(alerted) > 5000:
+        items = sorted(alerted.items(), key=lambda x: x[1], reverse=True)[:3000]
+        alerted = dict(items)
+    data["alerted"] = alerted
+    save_whale_alerts(data)
+
+
+def get_whale_volume_snapshot() -> dict[str, float]:
+    data = load_whale_alerts()
+    raw = data.get("last_volume_24h") or {}
+    out: dict[str, float] = {}
+    if isinstance(raw, dict):
+        for k, v in raw.items():
+            try:
+                out[str(k)] = float(v)
+            except (TypeError, ValueError):
+                continue
+    return out
+
+
+def set_whale_volume_snapshot(volumes: dict[str, float]) -> None:
+    data = load_whale_alerts()
+    data["last_volume_24h"] = {str(k): float(v) for k, v in volumes.items() if k and v is not None}
+    data["last_checked_at"] = _now_utc().isoformat()
+    save_whale_alerts(data)

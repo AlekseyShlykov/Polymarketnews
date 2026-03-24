@@ -10,7 +10,12 @@ from typing import Any
 
 import config
 from polymarket_client import fetch_all_markets
-from state import load_whale_alerts, mark_whale_alerted
+from state import (
+    load_whale_alerts,
+    mark_whale_alerted,
+    get_whale_volume_snapshot,
+    set_whale_volume_snapshot,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -182,28 +187,38 @@ def build_topic_brief_data(topic: str, max_markets: int | None = None) -> dict:
 
 def detect_whale_alerts(max_markets: int | None = None) -> list[dict]:
     """
-    Approximation: Gamma doesn't expose reliable single trade feed here, so we detect
-    likely whale-sized activity via very high 24h volume on one market.
+    Approximation for "trade in last interval":
+    compare current volume_24h with previous whale-check snapshot.
+    If volume increase over the interval >= threshold, treat as whale-sized trade flow.
     """
     markets = fetch_all_markets(max_markets or config.MAX_MARKETS_TO_SCAN)
-    alerted_map = load_whale_alerts()
+    whale_data = load_whale_alerts()
+    alerted_map = whale_data.get("alerted") or {}
+    previous_snapshot = get_whale_volume_snapshot()
+    current_snapshot: dict[str, float] = {}
     alerts: list[dict] = []
     for m in markets:
-        vol24 = _safe_float(m.get("volume_24h") or m.get("volume"))
-        if vol24 < config.WHALE_BET_USD_THRESHOLD:
-            continue
         alert_id = str(m.get("condition_id") or m.get("slug") or m.get("question") or "")
+        vol24 = _safe_float(m.get("volume_24h") or m.get("volume"))
+        if alert_id:
+            current_snapshot[alert_id] = vol24
+        prev_vol24 = previous_snapshot.get(alert_id, vol24)
+        interval_volume_delta = max(0.0, vol24 - prev_vol24)
+        if interval_volume_delta < config.WHALE_BET_USD_THRESHOLD:
+            continue
         if not alert_id or alerted_map.get(alert_id):
             continue
         alerts.append({
             "alert_id": alert_id,
-            "amount": round(vol24, 0),
+            "amount": round(interval_volume_delta, 0),
             "question": m.get("question") or "Unknown market",
             "current_probability": m.get("current_probability"),
             "liquidity": _safe_float(m.get("liquidity")),
             "slug": m.get("slug") or "",
         })
     alerts.sort(key=lambda x: x["amount"], reverse=True)
+    # Always refresh snapshot to represent the most recent 20-minute checkpoint.
+    set_whale_volume_snapshot(current_snapshot)
     return alerts
 
 

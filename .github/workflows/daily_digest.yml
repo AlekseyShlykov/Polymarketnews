@@ -7,7 +7,7 @@ on:
     - cron: "0 10 * * *"  # economy
     - cron: "0 12 * * *"  # sports
     - cron: "0 14 * * *"  # other
-    - cron: "*/30 * * * *"  # whale check every 30 min
+    - cron: "*/20 * * * *"  # whale check every 20 min
   workflow_dispatch:
 
 jobs:

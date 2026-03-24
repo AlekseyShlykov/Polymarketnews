@@ -17,9 +17,9 @@ Each post contains:
 
 ## Whale alerts
 
-Separate checks run every 30 minutes. If detected amount is above `$100,000`, the bot posts a standalone alert.
+Separate checks run every 20 minutes. If detected amount is above `$100,000` in the latest interval, the bot posts a standalone alert.
 
-Important limitation: current Gamma flow used in this project does not expose a reliable per-trade stream here, so whale detection is implemented as a lightweight approximation from high market activity (`volume_24h >= 100000`). This is documented in code comments.
+Important limitation: current Gamma flow used in this project does not expose a reliable per-trade stream here, so whale detection is implemented as a lightweight approximation from `volume_24h` increase between two 20-minute checks.
 
 ## Env vars / GitHub Secrets
 
