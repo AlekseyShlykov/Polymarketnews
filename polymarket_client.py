@@ -118,6 +118,7 @@ def event_to_markets(event: dict) -> list[dict]:
     """Extract market rows from one event. Skip closed markets."""
     out = []
     title = _safe_str(event.get("title") or event.get("question"))
+    event_slug = _safe_str(event.get("slug"))
     markets_raw = event.get("markets")
     event_category = _safe_str(event.get("category"))
     event_subcategory = _safe_str(event.get("subcategory"))
@@ -188,7 +189,7 @@ def event_to_markets(event: dict) -> list[dict]:
         subcategory = _safe_str(m.get("subcategory") or event_subcategory).lower()
         out.append({
             "question": question or "Unknown",
-            "slug": slug,
+            "slug": event_slug or slug,
             "condition_id": condition_id,
             "liquidity": liquidity,
             "volume": volume,
