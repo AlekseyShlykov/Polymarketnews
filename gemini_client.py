@@ -28,8 +28,12 @@ def _looks_speculative_or_causal(text: str) -> bool:
     return any(re.search(p, low) for p in _RISKY_CAUSE_PATTERNS)
 
 
+_MAX_RETRIES = 3
+_RETRY_BASE_DELAY = 2.0
+
+
 def _gemini_call(prompt: str, max_tokens: int = 300, temperature: float = 0.0) -> str | None:
-    """Low-level Gemini call. Returns text or None."""
+    """Low-level Gemini call with retry on 429/5xx. Returns text or None."""
     if not config.GEMINI_API_KEY:
         return None
     url = (
@@ -40,19 +44,31 @@ def _gemini_call(prompt: str, max_tokens: int = 300, temperature: float = 0.0) -
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
     }
-    try:
-        resp = requests.post(url, json=req_body, timeout=config.GEMINI_TIMEOUT_SECONDS)
-        resp.raise_for_status()
-        body = resp.json()
-        candidates = body.get("candidates") or []
-        if not candidates:
-            return None
-        parts = (((candidates[0] or {}).get("content") or {}).get("parts")) or []
-        text = " ".join((p.get("text") or "").strip() for p in parts if isinstance(p, dict)).strip()
-        return text or None
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Gemini call failed: %s", exc)
-        return None
+    for attempt in range(_MAX_RETRIES):
+        try:
+            resp = requests.post(url, json=req_body, timeout=config.GEMINI_TIMEOUT_SECONDS)
+            if resp.status_code == 429 or resp.status_code >= 500:
+                delay = _RETRY_BASE_DELAY * (2 ** attempt)
+                logger.info("Gemini %s, retrying in %.1fs (attempt %d/%d)", resp.status_code, delay, attempt + 1, _MAX_RETRIES)
+                import time
+                time.sleep(delay)
+                continue
+            resp.raise_for_status()
+            body = resp.json()
+            candidates = body.get("candidates") or []
+            if not candidates:
+                return None
+            parts = (((candidates[0] or {}).get("content") or {}).get("parts")) or []
+            text = " ".join((p.get("text") or "").strip() for p in parts if isinstance(p, dict)).strip()
+            return text or None
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Gemini call failed: %s", exc)
+            if attempt < _MAX_RETRIES - 1:
+                import time
+                time.sleep(_RETRY_BASE_DELAY * (2 ** attempt))
+            else:
+                return None
+    return None
 
 
 def build_topic_intro_with_gemini(topic_title_ru: str, payload: dict) -> str | None:

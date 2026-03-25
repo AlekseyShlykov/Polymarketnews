@@ -17,9 +17,6 @@ jobs:
   push_test_topics:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        topic: [politics, economy, sports, other]
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     steps:
@@ -30,15 +27,18 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Send push test topic post
+      - name: Send all 4 test topic posts sequentially
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          BOT_MODE: topic
-          TOPIC: ${{ matrix.topic }}
           DATA_WINDOW_HOURS: "2"
-        run: python main.py
+        run: |
+          for topic in politics economy sports other; do
+            echo "--- Sending $topic ---"
+            BOT_MODE=topic TOPIC=$topic python main.py
+            sleep 5
+          done
 
   post:
     if: github.event_name != 'push'
