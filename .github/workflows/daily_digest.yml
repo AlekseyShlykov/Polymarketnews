@@ -6,11 +6,11 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 8 * * *"   # politics
-    - cron: "0 10 * * *"  # economy
-    - cron: "0 12 * * *"  # sports
-    - cron: "0 14 * * *"  # other
-    - cron: "*/20 * * * *"  # whale check every 20 min
+    - cron: "0 8 * * *"       # politics
+    - cron: "0 10 * * *"      # economy
+    - cron: "0 12 * * *"      # sports
+    - cron: "0 14 * * *"      # other
+    - cron: "*/20 * * * *"    # whale check every 20 min
   workflow_dispatch:
 
 jobs:
@@ -58,27 +58,33 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Set run mode from UTC hour
+      - name: Set run mode from cron schedule
         id: mode
         run: |
-          MINUTE=$(date -u +%M)
-          HOUR=$(date -u +%H)
-          if [ "$MINUTE" = "00" ] && [ "$HOUR" = "08" ]; then
-            echo "bot_mode=topic" >> $GITHUB_OUTPUT
-            echo "topic=politics" >> $GITHUB_OUTPUT
-          elif [ "$MINUTE" = "00" ] && [ "$HOUR" = "10" ]; then
-            echo "bot_mode=topic" >> $GITHUB_OUTPUT
-            echo "topic=economy" >> $GITHUB_OUTPUT
-          elif [ "$MINUTE" = "00" ] && [ "$HOUR" = "12" ]; then
-            echo "bot_mode=topic" >> $GITHUB_OUTPUT
-            echo "topic=sports" >> $GITHUB_OUTPUT
-          elif [ "$MINUTE" = "00" ] && [ "$HOUR" = "14" ]; then
-            echo "bot_mode=topic" >> $GITHUB_OUTPUT
-            echo "topic=other" >> $GITHUB_OUTPUT
-          else
-            echo "bot_mode=whale" >> $GITHUB_OUTPUT
-            echo "topic=other" >> $GITHUB_OUTPUT
-          fi
+          SCHEDULE="${{ github.event.schedule }}"
+          echo "Triggered by schedule: $SCHEDULE"
+          case "$SCHEDULE" in
+            "0 8 * * *")
+              echo "bot_mode=topic" >> $GITHUB_OUTPUT
+              echo "topic=politics" >> $GITHUB_OUTPUT
+              ;;
+            "0 10 * * *")
+              echo "bot_mode=topic" >> $GITHUB_OUTPUT
+              echo "topic=economy" >> $GITHUB_OUTPUT
+              ;;
+            "0 12 * * *")
+              echo "bot_mode=topic" >> $GITHUB_OUTPUT
+              echo "topic=sports" >> $GITHUB_OUTPUT
+              ;;
+            "0 14 * * *")
+              echo "bot_mode=topic" >> $GITHUB_OUTPUT
+              echo "topic=other" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "bot_mode=whale" >> $GITHUB_OUTPUT
+              echo "topic=other" >> $GITHUB_OUTPUT
+              ;;
+          esac
 
       - name: Run bot
         env:
@@ -97,6 +103,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No whale state changes"
           else
+            git pull --rebase origin main || true
             git commit -m "chore: persist whale alerts state"
-            git push
+            git push || echo "Push failed (race condition), will retry next run"
           fi
