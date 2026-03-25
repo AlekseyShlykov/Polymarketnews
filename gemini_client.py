@@ -1,12 +1,14 @@
 """
 Minimal Gemini helper for compact Russian editorial intros and question translation.
 Falls back gracefully when API fails or is not configured.
+All Gemini work for one topic is done in a SINGLE API call to stay within free-tier rate limits.
 """
 from __future__ import annotations
 
 import json
 import logging
 import re
+import time
 
 import requests
 
@@ -14,26 +16,12 @@ import config
 
 logger = logging.getLogger(__name__)
 
-_RISKY_CAUSE_PATTERNS = (
-    r"\bпотому что\b",
-    r"\bиз-за\b",
-    r"\bна фоне\b",
-    r"\bтак как\b",
-    r"\bпо причине\b",
-)
+_MAX_RETRIES = 4
+_RETRY_BASE_DELAY = 3.0
 
 
-def _looks_speculative_or_causal(text: str) -> bool:
-    low = text.lower()
-    return any(re.search(p, low) for p in _RISKY_CAUSE_PATTERNS)
-
-
-_MAX_RETRIES = 3
-_RETRY_BASE_DELAY = 2.0
-
-
-def _gemini_call(prompt: str, max_tokens: int = 300, temperature: float = 0.0) -> str | None:
-    """Low-level Gemini call with retry on 429/5xx. Returns text or None."""
+def _gemini_call(prompt: str, max_tokens: int = 600, temperature: float = 0.0) -> str | None:
+    """Low-level Gemini call with retry on 429/5xx."""
     if not config.GEMINI_API_KEY:
         return None
     url = (
@@ -50,7 +38,6 @@ def _gemini_call(prompt: str, max_tokens: int = 300, temperature: float = 0.0) -
             if resp.status_code == 429 or resp.status_code >= 500:
                 delay = _RETRY_BASE_DELAY * (2 ** attempt)
                 logger.info("Gemini %s, retrying in %.1fs (attempt %d/%d)", resp.status_code, delay, attempt + 1, _MAX_RETRIES)
-                import time
                 time.sleep(delay)
                 continue
             resp.raise_for_status()
@@ -64,119 +51,98 @@ def _gemini_call(prompt: str, max_tokens: int = 300, temperature: float = 0.0) -
         except Exception as exc:  # noqa: BLE001
             logger.warning("Gemini call failed: %s", exc)
             if attempt < _MAX_RETRIES - 1:
-                import time
                 time.sleep(_RETRY_BASE_DELAY * (2 ** attempt))
             else:
                 return None
     return None
 
 
-def build_topic_intro_with_gemini(topic_title_ru: str, payload: dict) -> str | None:
-    """Return a short Russian intro paragraph or None on failure."""
-    prompt = (
-        "Ты редактор Telegram-канала про рынки прогнозов.\n"
-        "Пиши строго на русском и только по данным ниже.\n"
-        "Нельзя придумывать внешние причины, новости или инсайды.\n"
-        "Нельзя спекулировать и объяснять движение внешними причинами.\n"
-        "Нужен 1 короткий абзац (2-3 предложения), нейтральный тон.\n"
-        "Упомяни, где сейчас самая сильная уверенность рынка и где было самое сильное движение.\n"
-        f"Тема: {topic_title_ru}\n\n"
-        f"Данные: {payload}\n"
-    )
-    text = _gemini_call(prompt, max_tokens=180, temperature=0.1)
-    if not text:
-        return None
-    if _looks_speculative_or_causal(text):
-        logger.info("Gemini intro rejected due to causal wording.")
-        return None
-    return text
-
-
-def _translate_single_question(question: str) -> str | None:
-    """Translate one question via Gemini. Returns Russian text or None."""
-    prompt = (
-        "Переведи этот вопрос рынка прогнозов на русский язык.\n"
-        "Сохрани имена собственные, даты, тикеры и числа.\n"
-        "Ответь ТОЛЬКО переводом, без пояснений.\n\n"
-        f"{question}\n"
-    )
-    result = _gemini_call(prompt, max_tokens=120, temperature=0.0)
-    if not result:
-        return None
-    cleaned = result.strip().strip('"').strip("'").strip()
-    if not cleaned:
-        return None
-    return cleaned
-
-
-def translate_market_questions_to_russian(questions: list[str]) -> dict[str, str]:
+def generate_topic_content(
+    topic_title_ru: str,
+    market_data: dict,
+    questions_to_translate: list[str],
+) -> tuple[str | None, dict[str, str]]:
     """
-    Translate market questions to Russian. Strategy:
-    1. Try batch Gemini translation.
-    2. For any question that wasn't translated, try individual Gemini call.
-    3. If Gemini is completely unavailable, keep original English
-       (much better than half-Russian/half-English).
+    Single Gemini call per topic that returns both:
+    - intro paragraph (Russian)
+    - translated questions mapping
+
+    Returns (intro_text_or_None, {original_question: translated_question}).
+    On any failure, returns (None, identity_mapping).
     """
-    cleaned = [q.strip() for q in questions if isinstance(q, str) and q.strip()]
-    if not cleaned:
-        return {}
-    # Start with identity mapping (English originals as safe fallback).
-    mapping: dict[str, str] = {q: q for q in cleaned}
-    if not config.GEMINI_API_KEY:
-        return mapping
+    identity = {q: q for q in questions_to_translate}
+    if not config.GEMINI_API_KEY or not questions_to_translate:
+        return None, identity
 
-    # Step 1: batch translation.
-    batch_result = _try_batch_translate(cleaned)
-    if batch_result:
-        for src, tr in batch_result.items():
-            if tr and tr.strip():
-                mapping[src] = tr.strip()
+    q_lines = "\n".join([f"{i+1}. {q}" for i, q in enumerate(questions_to_translate)])
 
-    # Step 2: individually translate any that batch missed.
-    for q in cleaned:
-        if mapping[q] == q:
-            single = _translate_single_question(q)
-            if single:
-                mapping[q] = single
-
-    return mapping
-
-
-def _try_batch_translate(questions: list[str]) -> dict[str, str] | None:
-    """Try batch Gemini translation. Returns partial or full mapping, or None."""
-    prompt_lines = "\n".join([f"{i+1}. {q}" for i, q in enumerate(questions)])
     prompt = (
-        "Переведи эти вопросы рынков прогнозов с английского на русский.\n"
-        "Сохраняй имена собственные, даты, тикеры и числа.\n"
-        "Никаких пояснений. Ответ строго в формате:\n"
+        "Ты редактор русскоязычного Telegram-канала про рынки прогнозов Polymarket.\n"
+        "Задание из двух частей.\n\n"
+        "ЧАСТЬ 1 — ВВОДНЫЙ АБЗАЦ\n"
+        "Напиши 2-3 предложения на русском, нейтральным тоном.\n"
+        "Упомяни, где самая сильная уверенность рынка и где самое сильное движение.\n"
+        "Строго по данным ниже. Не придумывай причин и не спекулируй.\n"
+        f"Тема: {topic_title_ru}\n"
+        f"Данные: {market_data}\n\n"
+        "ЧАСТЬ 2 — ПЕРЕВОД ВОПРОСОВ\n"
+        "Переведи эти вопросы рынков на русский.\n"
+        "Сохрани имена собственные, даты, тикеры, числа.\n"
+        f"{q_lines}\n\n"
+        "ФОРМАТ ОТВЕТА (строго):\n"
+        "---INTRO---\n"
+        "<вводный абзац>\n"
+        "---TRANSLATIONS---\n"
         "1. <перевод>\n"
         "2. <перевод>\n"
-        "...\n\n"
-        f"{prompt_lines}\n"
+        "...\n"
     )
-    text = _gemini_call(prompt, max_tokens=600, temperature=0.0)
+
+    text = _gemini_call(prompt, max_tokens=800, temperature=0.1)
     if not text:
-        return None
+        return None, identity
 
-    text = text.replace("```", "").strip()
-    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    intro = None
+    translations = dict(identity)
 
-    # Parse flexibly: accept "1) ...", "1. ...", "1: ...", "1 - ..." etc.
-    parsed: list[str] = []
-    for line in lines:
-        m = re.match(r"^\d+[\.\)\:\-]\s*(.+)$", line)
-        if m:
-            parsed.append(m.group(1).strip())
+    # Parse intro.
+    intro_match = re.search(r"---INTRO---\s*\n(.+?)(?=---TRANSLATIONS---|$)", text, re.DOTALL)
+    if intro_match:
+        intro_text = intro_match.group(1).strip()
+        if intro_text and not _looks_speculative_or_causal(intro_text):
+            intro = intro_text
 
-    if not parsed:
-        logger.warning("Gemini batch translation: no parseable lines in response.")
-        return None
+    # Parse translations.
+    trans_match = re.search(r"---TRANSLATIONS---\s*\n(.+)", text, re.DOTALL)
+    if trans_match:
+        trans_block = trans_match.group(1).strip()
+        parsed: list[str] = []
+        for line in trans_block.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            m = re.match(r"^\d+[\.\)\:\-]\s*(.+)$", line)
+            if m:
+                parsed.append(m.group(1).strip())
+        for i, src in enumerate(questions_to_translate):
+            if i < len(parsed) and parsed[i].strip():
+                translations[src] = parsed[i].strip()
 
-    result: dict[str, str] = {}
-    for i, src in enumerate(questions):
-        if i < len(parsed) and parsed[i].strip():
-            result[src] = parsed[i].strip()
+    translated_count = sum(1 for src in questions_to_translate if translations.get(src) != src)
+    logger.info("Gemini: intro=%s, translated %d/%d questions.", "yes" if intro else "no", translated_count, len(questions_to_translate))
 
-    if result:
-        logger.info("Gemini batch translated %d/%d questions.", len(result), len(questions))
-    return result
+    return intro, translations
+
+
+_RISKY_CAUSE_PATTERNS = (
+    r"\bпотому что\b",
+    r"\bиз-за\b",
+    r"\bна фоне\b",
+    r"\bтак как\b",
+    r"\bпо причине\b",
+)
+
+
+def _looks_speculative_or_causal(text: str) -> bool:
+    low = text.lower()
+    return any(re.search(p, low) for p in _RISKY_CAUSE_PATTERNS)

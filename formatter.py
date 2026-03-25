@@ -8,7 +8,7 @@ import re
 from html import escape
 from datetime import datetime, timezone
 
-from gemini_client import build_topic_intro_with_gemini, translate_market_questions_to_russian
+from gemini_client import generate_topic_content
 
 
 def format_number(val: float | None) -> str:
@@ -333,44 +333,36 @@ def format_topic_brief(data: dict) -> str:
     most_active = data.get("most_active") or {}
     period_label = data.get("period_label") or "24 часа"
 
+    # Collect all unique questions to translate.
+    source_questions: list[str] = []
+    seen_q: set[str] = set()
+    for m in top[:3]:
+        q = _clean_text(m.get("question"))
+        if q != "Unknown" and q not in seen_q:
+            source_questions.append(q)
+            seen_q.add(q)
+    for extra in (biggest, most_active):
+        q = _clean_text(extra.get("question"))
+        if q != "Unknown" and q not in seen_q:
+            source_questions.append(q)
+            seen_q.add(q)
+
+    # Single Gemini call for both intro and translations.
     gemini_payload = {
         "top_markets": [
-            {
-                "question": m.get("question"),
-                "probability": m.get("current_probability"),
-                "delta_24h": m.get("delta_24h"),
-                "volume_24h": m.get("volume_24h"),
-            }
+            {"question": m.get("question"), "probability": m.get("current_probability"),
+             "delta_24h": m.get("delta_24h"), "volume_24h": m.get("volume_24h")}
             for m in top[:3]
         ],
-        "biggest_move": {
-            "question": biggest.get("question"),
-            "delta_24h": biggest.get("delta_24h"),
-        },
-        "most_active": {
-            "question": most_active.get("question"),
-            "volume_24h": most_active.get("volume_24h"),
-        },
+        "biggest_move": {"question": biggest.get("question"), "delta_24h": biggest.get("delta_24h")},
+        "most_active": {"question": most_active.get("question"), "volume_24h": most_active.get("volume_24h")},
     }
-    # Gemini is used only as style rewrite. On any failure we use deterministic template text.
-    intro = build_topic_intro_with_gemini(topic_ru, gemini_payload)
+    intro, q_map = generate_topic_content(topic_ru, gemini_payload, source_questions)
     if not intro:
         intro = (
             f"По теме «{topic_ru}» рынок сейчас выделяет несколько ключевых сценариев. "
             "Ниже — рынки с самой высокой уверенностью, заметным движением и наибольшим объемом за сутки."
         )
-
-    # Translate market titles to Russian for final Telegram readability.
-    source_questions = []
-    for m in top[:3]:
-        q = _clean_text(m.get("question"))
-        if q != "Unknown":
-            source_questions.append(q)
-    for extra in (biggest, most_active):
-        q = _clean_text(extra.get("question"))
-        if q != "Unknown":
-            source_questions.append(q)
-    q_map = translate_market_questions_to_russian(source_questions)
 
     lines = [f"Polymarket — {topic_ru}", "", "Что считает рынок:", intro, ""]
     for idx, m in enumerate(top[:3], 1):
