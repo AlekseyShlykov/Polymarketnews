@@ -37,7 +37,8 @@ jobs:
           for topic in politics economy sports other; do
             echo "--- Sending $topic ---"
             BOT_MODE=topic TOPIC=$topic python main.py
-            sleep 5
+            echo "--- Waiting 60s before next topic (Gemini rate limit) ---"
+            sleep 60
           done
 
   post:

@@ -16,8 +16,8 @@ import config
 
 logger = logging.getLogger(__name__)
 
-_MAX_RETRIES = 4
-_RETRY_BASE_DELAY = 3.0
+_MAX_RETRIES = 5
+_RETRY_BASE_DELAY = 5.0
 
 
 def _gemini_call(prompt: str, max_tokens: int = 600, temperature: float = 0.0) -> str | None:
