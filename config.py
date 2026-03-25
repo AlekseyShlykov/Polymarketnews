@@ -68,5 +68,5 @@ WHALE_BET_USD_THRESHOLD = 100000.0
 WHALE_ALERTS_PATH = _ROOT / "whale_alerts.json"
 
 # Gemini
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.0-flash-lite"
 GEMINI_TIMEOUT_SECONDS = 20

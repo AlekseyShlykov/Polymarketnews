@@ -32,6 +32,7 @@ def _gemini_call(prompt: str, max_tokens: int = 600, temperature: float = 0.0) -
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
     }
+    last_exc = None
     for attempt in range(_MAX_RETRIES):
         try:
             resp = requests.post(url, json=req_body, timeout=config.GEMINI_TIMEOUT_SECONDS)
@@ -49,11 +50,15 @@ def _gemini_call(prompt: str, max_tokens: int = 600, temperature: float = 0.0) -
             text = " ".join((p.get("text") or "").strip() for p in parts if isinstance(p, dict)).strip()
             return text or None
         except Exception as exc:  # noqa: BLE001
+            last_exc = exc
             logger.warning("Gemini call failed: %s", exc)
             if attempt < _MAX_RETRIES - 1:
                 time.sleep(_RETRY_BASE_DELAY * (2 ** attempt))
-            else:
-                return None
+                continue
+    if last_exc:
+        logger.warning("Gemini exhausted all retries, last error: %s", last_exc)
+    else:
+        logger.warning("Gemini exhausted all retries (429/5xx).")
     return None
 
 
