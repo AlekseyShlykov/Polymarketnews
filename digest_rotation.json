@@ -18,5 +18,15 @@
         "0x742fec2bf8157b780b2cf6b188076b9bd830122e665c216bc0f1e2d77e21cd23"
       ]
     }
+  },
+  "sports": {
+    "history": {
+      "2026-04-08": [
+        "0xb6b3d7a2037b3faa7e1306d741840d453432902d73cc9a146a035e40271eae73",
+        "0x30d55d8124ee1e12dabe89201badc45669b81dff69e4ce44d961f32878ec178a",
+        "0xc58cfb7397c4f3f803f5c20135cafa7f6d2c87cf3bb1e6138042b95d828e1866",
+        "0xe99cc59f32b10d23acf196d1a0e8264ea30fca198428acadd3464b06ff60e771"
+      ]
+    }
   }
 }
