@@ -326,17 +326,39 @@ def _fmt_usd(val: float | None) -> str:
     return f"${int(float(val)):,}".replace(",", " ")
 
 
+def _short_end_date(val: str | None) -> str:
+    if not val or not isinstance(val, str):
+        return "—"
+    s = val.strip()
+    if "T" in s:
+        return s.split("T", 1)[0]
+    if len(s) >= 10 and s[4] == "-" and s[7] == "-":
+        return s[:10]
+    return s[:32] if len(s) > 32 else s
+
+
 def format_topic_brief(data: dict) -> str:
     topic_ru = data.get("topic_ru") or "Другое"
     top = data.get("top_markets") or []
     biggest = data.get("biggest_move") or {}
     most_active = data.get("most_active") or {}
     period_label = data.get("period_label") or "24 часа"
+    spotlight = data.get("politics_spotlight")
 
-    # Collect all unique questions to translate.
+    # Collect all unique questions to translate (+ politics event title if present).
     source_questions: list[str] = []
     seen_q: set[str] = set()
-    for m in top[:3]:
+    if isinstance(spotlight, dict):
+        et = _clean_text(spotlight.get("event_title"))
+        if et != "Unknown" and et not in seen_q:
+            source_questions.append(et)
+            seen_q.add(et)
+        for sm in spotlight.get("markets") or []:
+            q = _clean_text(sm.get("question"))
+            if q != "Unknown" and q not in seen_q:
+                source_questions.append(q)
+                seen_q.add(q)
+    for m in top:
         q = _clean_text(m.get("question"))
         if q != "Unknown" and q not in seen_q:
             source_questions.append(q)
@@ -347,16 +369,25 @@ def format_topic_brief(data: dict) -> str:
             source_questions.append(q)
             seen_q.add(q)
 
-    # Single Gemini call for both intro and translations.
-    gemini_payload = {
+    gemini_payload: dict = {
         "top_markets": [
             {"question": m.get("question"), "probability": m.get("current_probability"),
              "delta_24h": m.get("delta_24h"), "volume_24h": m.get("volume_24h")}
-            for m in top[:3]
+            for m in top
         ],
         "biggest_move": {"question": biggest.get("question"), "delta_24h": biggest.get("delta_24h")},
         "most_active": {"question": most_active.get("question"), "volume_24h": most_active.get("volume_24h")},
     }
+    if isinstance(spotlight, dict) and spotlight.get("markets"):
+        gemini_payload["politics_spotlight"] = {
+            "theme": spotlight.get("event_title"),
+            "total_liquidity": spotlight.get("total_liquidity"),
+            "variants": [
+                {"question": x.get("question"), "probability": x.get("current_probability"), "end_date": x.get("end_date")}
+                for x in spotlight["markets"]
+            ],
+        }
+
     intro, q_map = generate_topic_content(topic_ru, gemini_payload, source_questions)
     if not intro:
         intro = (
@@ -365,7 +396,24 @@ def format_topic_brief(data: dict) -> str:
         )
 
     lines = [f"Polymarket — {topic_ru}", "", "Что считает рынок:", intro, ""]
-    for idx, m in enumerate(top[:3], 1):
+
+    if isinstance(spotlight, dict) and spotlight.get("markets"):
+        slug_sp = (spotlight.get("event_slug") or "").strip()
+        et_src = _clean_text(spotlight.get("event_title"))
+        et_show = _clickable_question(q_map.get(et_src, et_src), slug_sp or None)
+        lines.append("Один сценарий — разные сроки:")
+        lines.append(et_show)
+        lines.append(f"Суммарная ликвидность по вариантам: {_fmt_usd(spotlight.get('total_liquidity'))}")
+        lines.append("")
+        for sm in spotlight["markets"]:
+            sq = _clean_text(sm.get("question"))
+            qline = _clickable_question(q_map.get(sq, sq), slug_sp or sm.get("slug"))
+            ed = _short_end_date(sm.get("end_date"))
+            pv = _fmt_pct(sm.get("current_probability"))
+            lines.append(f"• {qline} — до {ed}: {pv}")
+        lines.append("")
+
+    for idx, m in enumerate(top, 1):
         src_q = _clean_text(m.get("question"))
         q = _clickable_question(q_map.get(src_q, src_q), m.get("slug"))
         old_p = _fmt_pct(m.get("display_previous_probability", m.get("previous_probability")))

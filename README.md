@@ -11,13 +11,20 @@ Bot posts exactly 4 thematic briefs per day (in Russian) and separate whale aler
 
 Each post contains:
 - short Russian intro (Gemini rewrite, strict data-only prompt)
-- top 3 markets for the topic
+- top **4** markets for the topic (vs yesterday’s digest: at most 2 repeats, at least 2 new `condition_id`s when the pool allows)
+- **Politics only:** extra block “Один сценарий — разные сроки” — one multi-outcome event with the highest total liquidity across its markets, with probability per deadline variant
 - biggest move in 24h
 - most active market in 24h
 
+Digest rotation is stored in `digest_rotation.json` (committed by Actions when it changes).
+
 ## Whale alerts   
 
-Separate checks run every 20 minutes. If detected amount is above `$100,000` in the latest interval, the bot posts a standalone alert.
+Separate checks run every 20 minutes. Detection uses the increase in `volume_24h` between snapshots (approximation, not individual trades).
+
+- **Politics & Economy:** alert if interval volume increase ≥ **$100,000**
+- **Sports:** only if increase ≥ **$300,000**
+- **Other:** no whale posts
 
 Important limitation: current Gamma flow used in this project does not expose a reliable per-trade stream here, so whale detection is implemented as a lightweight approximation from `volume_24h` increase between two 20-minute checks.
 
@@ -44,9 +51,10 @@ BOT_MODE=whale python main.py
 BOT_MODE=topic TOPIC=politics DATA_WINDOW_HOURS=2 python main.py
 ```
 
-## Push test mode
+Scheduled runs only post one thematic brief per cron slot (no automatic posts on git push). For a local short-window test:
 
-On every push to `main`, GitHub Actions sends 4 test posts (politics/economy/sports/other) with a 2-hour data window:
-- `BOT_MODE=topic`
-- `TOPIC=<topic>`
-- `DATA_WINDOW_HOURS=2`
+```bash
+BOT_MODE=topic TOPIC=politics DATA_WINDOW_HOURS=2 python main.py
+```
+
+(`DATA_WINDOW_HOURS` disables yesterday-based rotation and the politics multi-outcome block uses the same fetch rules as production.)

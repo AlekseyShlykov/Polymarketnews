@@ -18,6 +18,7 @@ if __name__ == "__main__":
 import config
 from analyzer import build_topic_brief_data, detect_whale_alerts, mark_whale_alert_sent
 from formatter import format_topic_brief, format_whale_alert
+from state import record_topic_digest_rotation
 from telegram_sender import send_telegram
 from utils import setup_logging
 
@@ -73,6 +74,13 @@ def main() -> None:
     if not send_telegram(text):
         logger.error("Telegram send failed")
         sys.exit(1)
+    if data.get("record_rotation"):
+        ids = [
+            str(m.get("condition_id") or "")
+            for m in (data.get("top_markets") or [])
+            if m.get("condition_id")
+        ]
+        record_topic_digest_rotation(topic, ids)
     logger.info("Topic brief sent for %s.", topic)
 
 

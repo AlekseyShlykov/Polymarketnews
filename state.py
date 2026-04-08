@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -14,6 +14,7 @@ _ROOT = Path(__file__).resolve().parent
 STATE_PATH = _ROOT / "state.json"
 DAILY_SIGNALS_PATH = _ROOT / "daily_signals.json"
 WHALE_ALERTS_PATH = _ROOT / "whale_alerts.json"
+DIGEST_ROTATION_PATH = _ROOT / "digest_rotation.json"
 
 # Cooldown: do not post same market again within this many hours
 COOLDOWN_HOURS = 12
@@ -288,3 +289,54 @@ def set_whale_volume_snapshot(volumes: dict[str, float]) -> None:
     data["last_volume_24h"] = {str(k): float(v) for k, v in volumes.items() if k and v is not None}
     data["last_checked_at"] = _now_utc().isoformat()
     save_whale_alerts(data)
+
+
+def load_digest_rotation() -> dict:
+    """Per-topic calendar history of condition_ids shown in digests (UTC dates)."""
+    raw = load_json(DIGEST_ROTATION_PATH, {})
+    return raw if isinstance(raw, dict) else {}
+
+
+def save_digest_rotation(data: dict) -> None:
+    save_json(DIGEST_ROTATION_PATH, data)
+
+
+def get_yesterday_digest_condition_ids(topic: str) -> set[str]:
+    """
+    Condition IDs from the same topic digest on the previous UTC calendar day.
+    Used to enforce at most 2 repeats / at least 2 fresh markets.
+    """
+    topic = (topic or "").strip().lower()
+    if not topic:
+        return set()
+    today = _now_utc().date()
+    ykey = (today - timedelta(days=1)).isoformat()
+    root = load_digest_rotation()
+    entry = root.get(topic)
+    if not isinstance(entry, dict):
+        return set()
+    hist = entry.get("history")
+    if not isinstance(hist, dict):
+        return set()
+    ids = hist.get(ykey)
+    if not isinstance(ids, list):
+        return set()
+    return {str(x) for x in ids if x}
+
+
+def record_topic_digest_rotation(topic: str, condition_ids: list[str]) -> None:
+    """Store today's digest picks for this topic (UTC date)."""
+    topic = (topic or "").strip().lower()
+    if not topic:
+        return
+    today_key = _now_utc().date().isoformat()
+    root = load_digest_rotation()
+    entry = dict(root.get(topic) or {})
+    hist = dict(entry.get("history") or {})
+    hist[today_key] = [str(x) for x in condition_ids if x]
+    # Keep last 4 days to limit file size
+    keep_days = sorted(hist.keys(), reverse=True)[:4]
+    hist = {k: hist[k] for k in keep_days}
+    entry["history"] = hist
+    root[topic] = entry
+    save_digest_rotation(root)

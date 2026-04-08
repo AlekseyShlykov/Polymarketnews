@@ -1,7 +1,7 @@
 """Tests for analyzer: delta, filtering, ranking."""
 import pytest
 
-from analyzer import filter_and_rank
+from analyzer import filter_and_rank, select_digest_markets
 
 
 def test_filter_by_liquidity():
@@ -68,6 +68,29 @@ def test_negative_delta_included_by_abs():
     assert len(out) == 2
     assert out[0]["question"] == "Down"
     assert out[1]["question"] == "Up"
+
+
+def test_select_digest_prefers_fresh_when_possible():
+    ranked = [
+        {"condition_id": "old1", "question": "A"},
+        {"condition_id": "old2", "question": "B"},
+        {"condition_id": "new1", "question": "C"},
+        {"condition_id": "new2", "question": "D"},
+        {"condition_id": "new3", "question": "E"},
+        {"condition_id": "new4", "question": "F"},
+    ]
+    prev = {"old1", "old2"}
+    out = select_digest_markets(ranked, prev, 4)
+    ids = [x["condition_id"] for x in out]
+    assert len(out) == 4
+    assert ids.count("old1") + ids.count("old2") <= 2
+    assert sum(1 for i in ids if i not in prev) >= 2
+
+
+def test_select_digest_all_new_when_no_history():
+    ranked = [{"condition_id": f"n{i}", "question": str(i)} for i in range(4)]
+    out = select_digest_markets(ranked, set(), 4)
+    assert len(out) == 4
 
 
 def test_skip_missing_delta():

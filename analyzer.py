@@ -11,9 +11,10 @@ from typing import Any
 import config
 from polymarket_client import fetch_all_markets
 from state import (
+    get_whale_volume_snapshot,
+    get_yesterday_digest_condition_ids,
     load_whale_alerts,
     mark_whale_alerted,
-    get_whale_volume_snapshot,
     set_whale_volume_snapshot,
 )
 
@@ -78,9 +79,60 @@ TOPIC_LABELS_RU = {
 }
 
 
+# Tag slugs/labels (lowercase) that strongly imply a bucket — checked before substring heuristics.
+_POLITICS_TAG_SLUGS = frozenset({
+    "politics", "political", "geopolitics", "geopolitical", "world", "elections", "global-elections",
+    "us-election", "world-elections", "trump", "biden", "congress", "senate", "house",
+    "foreign-policy", "international-relations", "diplomacy", "nato", "united-nations",
+    "ukraine", "russia", "israel", "palestine", "iran", "middle-east", "gaza", "syria",
+    "china", "taiwan", "india", "pakistan", "north-korea", "south-korea", "japan",
+    "defense", "military", "conflict", "war", "ceasefire", "sanctions", "summit",
+    "macron", "starmer", "eu-politics", "brexit", "election", "parliament",
+})
+_ECONOMY_TAG_SLUGS = frozenset({
+    "economy", "economic", "macro", "inflation", "recession", "fed", "interest-rates",
+    "finance", "crypto", "bitcoin", "ethereum", "stocks", "equities", "commodities",
+    "gdp", "employment", "jobs", "banking", "treasury", "yield", "rates", "forex",
+    "ipo", "earnings", "markets", "defi", "nft",
+})
+_SPORTS_TAG_SLUGS = frozenset({
+    "sports", "sport", "soccer", "football", "nba", "nfl", "mlb", "nhl", "tennis",
+    "baseball", "hockey", "ufc", "mma", "boxing", "olympics", "f1", "formula-1",
+    "esports", "ncaa", "golf", "cricket", "rugby",
+})
+
+# Substrings in category + subcategory + tags (joined) — longer phrases first where possible.
+_POLITICS_SUBSTR = (
+    "geopolit", "foreign policy", "foreign-policy", "united nations", "legislation",
+    "government shutdown", "white house", "kremlin", "nato", "sanction", "ceasefire",
+    "invasion", "military", "diplom", "embassy", "ambassador", "treaty", "summit",
+    "referendum", "parliament", "congressional", "senate race", "presidential",
+    "ukraine", "russia", "zelensky", "putin", "iran", "israel", "palestine", "gaza",
+    "middle east", "south china sea", "taiwan strait", "north korea", "ballistic",
+    "crimea", "donbas", "humanitarian", "coup", "insurg", "terror", "border",
+    "territory", "occupation", "peace deal", "two-state", "settlements", "hezbollah",
+    "houthis", "yemen", "syria", "lebanon", "iraq", "afghanistan", "libya", "sudan",
+    "sub-saharan", "africa politics", "latin america politics", "election", "electoral",
+    "impeach", "cabinet", "prime minister", "chancellor", "dictator", "authoritarian",
+)
+_ECONOMY_SUBSTR = (
+    "economy", "macro", "inflation", "recession", "fed ", "federal reserve", "interest rate",
+    "cpi ", "gdp", "jobs report", "nonfarm", "treasury", "yield curve", "banking",
+    "finance", "crypto", "bitcoin", "ethereum", "stock", "equity", "commodit", "oil price",
+    "natural gas", "gold price", "forex", "dollar index", "ipo", "earnings", "merger",
+    "acquisition", "bankruptcy", "default", "bailout", "stimulus", "tariff", "trade war",
+)
+_SPORTS_SUBSTR = (
+    "sport", "soccer", "football", "nba", "nfl", "mlb", "nhl", "tennis", "baseball",
+    "hockey", "ufc", "mma", "boxing", "olympic", "f1", "formula 1", "esports", "ncaa",
+    "premier league", "champions league", "world cup", "super bowl", "stanley cup",
+    "wimbledon", "golf", "cricket", "rugby", "nascar",
+)
+
+
 def classify_topic(market: dict) -> str:
     """
-    Topic classification: category -> subcategory -> tags, otherwise Other.
+    Topic classification: explicit culture override, then tag hints, then substring heuristics.
     """
     category = str(market.get("category") or "").lower()
     subcategory = str(market.get("subcategory") or "").lower()
@@ -88,21 +140,26 @@ def classify_topic(market: dict) -> str:
     haystack = " ".join([category, subcategory, " ".join(tags)])
     tag_set = set(tags)
 
-    politics_keys = ["politics", "election", "government", "geopolit", "legislation", "leader", "war", "diplom"]
-    economy_keys = ["economy", "macro", "inflation", "recession", "fed", "rate", "finance", "crypto", "stock", "commodit"]
-    sports_keys = ["sport", "soccer", "football", "nba", "nfl", "tennis", "baseball", "hockey"]
-    other_override_tags = {"culture", "pop-culture", "music", "movies", "entertainment", "gta-vi", "celebrity"}
+    other_override_tags = {"culture", "pop-culture", "music", "movies", "entertainment", "gta-vi", "celebrity", "awards"}
 
-    # If a market is clearly culture/entertainment, prefer Other.
     if tag_set.intersection(other_override_tags):
         return TOPIC_OTHER
 
-    if any(k in haystack for k in politics_keys):
+    if tag_set.intersection(_POLITICS_TAG_SLUGS):
         return TOPIC_POLITICS
-    if any(k in haystack for k in economy_keys):
+    if any(s in haystack for s in _POLITICS_SUBSTR):
+        return TOPIC_POLITICS
+
+    if tag_set.intersection(_ECONOMY_TAG_SLUGS):
         return TOPIC_ECONOMY
-    if any(k in haystack for k in sports_keys):
+    if any(s in haystack for s in _ECONOMY_SUBSTR):
+        return TOPIC_ECONOMY
+
+    if tag_set.intersection(_SPORTS_TAG_SLUGS):
         return TOPIC_SPORTS
+    if any(s in haystack for s in _SPORTS_SUBSTR):
+        return TOPIC_SPORTS
+
     return TOPIC_OTHER
 
 
@@ -134,6 +191,133 @@ def _dedupe_near_duplicates(markets: list[dict]) -> list[dict]:
         seen.add(key)
         out.append(m)
     return out
+
+
+def select_digest_markets(ranked: list[dict], prev_ids: set[str], count: int) -> list[dict]:
+    """
+    Pick `count` markets in global rank order with rotation vs yesterday:
+    at least 2 markets not in prev_ids, at most 2 from prev_ids (when possible).
+    """
+    if count <= 0:
+        return []
+    prev_ids = {str(x) for x in (prev_ids or set()) if x}
+
+    def cid(m: dict) -> str:
+        return str(m.get("condition_id") or "")
+
+    selected: list[dict] = []
+    selected_ids: set[str] = set()
+
+    for m in ranked:
+        if len(selected) >= count:
+            break
+        c = cid(m)
+        if not c or c in selected_ids:
+            continue
+        n_old = sum(1 for x in selected if cid(x) in prev_ids)
+        n_new = len(selected) - n_old
+        is_old = c in prev_ids
+        slots_left = count - len(selected)
+        if is_old:
+            if n_old >= 2:
+                continue
+            remaining_after = slots_left - 1
+            need_new = max(0, 2 - n_new)
+            if need_new > remaining_after:
+                continue
+        selected.append(m)
+        selected_ids.add(c)
+
+    if len(selected) < count:
+        # Prefer any remaining *new* markets first (keeps ≤2 repeats when pool allows).
+        for m in ranked:
+            if len(selected) >= count:
+                break
+            c = cid(m)
+            if not c or c in selected_ids or c in prev_ids:
+                continue
+            selected.append(m)
+            selected_ids.add(c)
+
+    if len(selected) < count:
+        for m in ranked:
+            if len(selected) >= count:
+                break
+            c = cid(m)
+            if not c or c in selected_ids:
+                continue
+            n_old = sum(1 for x in selected if cid(x) in prev_ids)
+            if c in prev_ids and n_old >= 2:
+                continue
+            n_new = len(selected) - n_old
+            slots_left = count - len(selected)
+            if c in prev_ids:
+                remaining_after = slots_left - 1
+                need_new = max(0, 2 - n_new)
+                if need_new > remaining_after:
+                    continue
+            selected.append(m)
+            selected_ids.add(c)
+
+    if len(selected) < count:
+        for m in ranked:
+            if len(selected) >= count:
+                break
+            c = cid(m)
+            if not c or c in selected_ids:
+                continue
+            selected.append(m)
+            selected_ids.add(c)
+
+    return selected[:count]
+
+
+def build_politics_event_spotlight(all_markets: list[dict]) -> dict | None:
+    """
+    One multi-market political event with highest total liquidity across sibling markets
+    (e.g. same theme, different deadlines). Used only in Politics digest.
+    """
+    from collections import defaultdict
+
+    by_event: dict[str, list[dict]] = defaultdict(list)
+    for m in all_markets:
+        if classify_topic(m) != TOPIC_POLITICS:
+            continue
+        evid = str(m.get("event_id") or "").strip()
+        if not evid:
+            continue
+        liq = _safe_float(m.get("liquidity"))
+        vol24 = _safe_float(m.get("volume_24h") or m.get("volume"))
+        if liq < config.TOPIC_MIN_LIQUIDITY or vol24 < config.TOPIC_MIN_VOLUME_24H:
+            continue
+        if m.get("current_probability") is None:
+            continue
+        by_event[evid].append(m)
+
+    best_ms: list[dict] | None = None
+    best_total_liq = -1.0
+    for ms in by_event.values():
+        if len(ms) < config.POLITICS_SPOTLIGHT_MIN_MARKETS:
+            continue
+        total_liq = sum(_safe_float(x.get("liquidity")) for x in ms)
+        if total_liq > best_total_liq:
+            best_total_liq = total_liq
+            best_ms = ms
+
+    if not best_ms:
+        return None
+
+    ms_sorted = sorted(
+        best_ms,
+        key=lambda x: (str(x.get("end_date") or ""), str(x.get("question") or "")),
+    )
+    cap = config.POLITICS_SPOTLIGHT_MAX_LINES
+    return {
+        "event_title": (ms_sorted[0].get("event_title") or "").strip() or "—",
+        "event_slug": (ms_sorted[0].get("slug") or "").strip(),
+        "total_liquidity": round(best_total_liq, 0),
+        "markets": ms_sorted[:cap],
+    }
 
 
 def _is_recent_market(market: dict, window_hours: float) -> bool:
@@ -184,7 +368,7 @@ def build_topic_brief_data(
         # still return compact fallback built from strongest available by liquidity.
         alt = [m for m in markets if classify_topic(m) == topic]
         alt.sort(key=lambda r: (_safe_float(r.get("volume_24h") or r.get("volume")), _safe_float(r.get("liquidity"))), reverse=True)
-        topic_rows = [{**m, "liquidity": _safe_float(m.get("liquidity")), "volume_24h": _safe_float(m.get("volume_24h") or m.get("volume"))} for m in alt[: max(3, config.TOPIC_TOP_MARKETS)]]
+        topic_rows = [{**m, "liquidity": _safe_float(m.get("liquidity")), "volume_24h": _safe_float(m.get("volume_24h") or m.get("volume"))} for m in alt[: max(4, config.TOPIC_TOP_MARKETS)]]
 
     vols = [_safe_float(m.get("volume_24h")) for m in topic_rows]
     liqs = [_safe_float(m.get("liquidity")) for m in topic_rows]
@@ -205,17 +389,29 @@ def build_topic_brief_data(
 
     ranked = sorted(topic_rows, key=lambda x: x.get("importance_score", 0), reverse=True)
     ranked = _dedupe_near_duplicates(ranked)
-    top3 = ranked[: config.TOPIC_TOP_MARKETS]
+    use_rotation = not (window_hours and window_hours > 0)
+    prev_ids = get_yesterday_digest_condition_ids(topic) if use_rotation else set()
+    politics_spotlight = (
+        build_politics_event_spotlight(markets)
+        if (use_rotation and topic == TOPIC_POLITICS)
+        else None
+    )
+    if use_rotation:
+        top_n = select_digest_markets(ranked, prev_ids, config.TOPIC_TOP_MARKETS)
+    else:
+        top_n = ranked[: config.TOPIC_TOP_MARKETS]
 
     biggest_move = max(ranked, key=lambda x: abs(_safe_float(x.get("delta_24h"))), default=None)
     most_active = max(ranked, key=lambda x: _safe_float(x.get("volume_24h")), default=None)
     return {
         "topic": topic,
         "topic_ru": TOPIC_LABELS_RU.get(topic, "Другое"),
-        "top_markets": top3,
+        "top_markets": top_n,
         "biggest_move": biggest_move,
         "most_active": most_active,
-        "period_label": top3[0].get("period_label") if top3 else "24 часа",
+        "period_label": top_n[0].get("period_label") if top_n else "24 часа",
+        "politics_spotlight": politics_spotlight,
+        "record_rotation": use_rotation,
     }
 
 
@@ -238,7 +434,14 @@ def detect_whale_alerts(max_markets: int | None = None) -> list[dict]:
             current_snapshot[alert_id] = vol24
         prev_vol24 = previous_snapshot.get(alert_id, vol24)
         interval_volume_delta = max(0.0, vol24 - prev_vol24)
-        if interval_volume_delta < config.WHALE_BET_USD_THRESHOLD:
+        tpc = classify_topic(m)
+        if tpc == TOPIC_OTHER:
+            continue
+        if tpc == TOPIC_SPORTS:
+            threshold = config.WHALE_SPORTS_OTHER_USD_THRESHOLD
+        else:
+            threshold = config.WHALE_BET_USD_THRESHOLD
+        if interval_volume_delta < threshold:
             continue
         if not alert_id or alerted_map.get(alert_id):
             continue

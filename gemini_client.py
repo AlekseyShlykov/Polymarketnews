@@ -103,7 +103,7 @@ def generate_topic_content(
         "...\n"
     )
 
-    text = _gemini_call(prompt, max_tokens=800, temperature=0.1)
+    text = _gemini_call(prompt, max_tokens=1400, temperature=0.1)
     if not text:
         return None, identity
 

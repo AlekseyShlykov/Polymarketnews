@@ -119,6 +119,7 @@ def event_to_markets(event: dict) -> list[dict]:
     out = []
     title = _safe_str(event.get("title") or event.get("question"))
     event_slug = _safe_str(event.get("slug"))
+    event_id = _safe_str(event.get("id"))
     markets_raw = event.get("markets")
     event_category = _safe_str(event.get("category"))
     event_subcategory = _safe_str(event.get("subcategory"))
@@ -187,9 +188,14 @@ def event_to_markets(event: dict) -> list[dict]:
         tags = [t for t in [*event_tags, *market_tags] if t]
         category = _safe_str(m.get("category") or event_category).lower()
         subcategory = _safe_str(m.get("subcategory") or event_subcategory).lower()
+        end_raw = m.get("endDate") or m.get("endDateIso") or event.get("endDate")
+        end_date = _safe_str(end_raw) if end_raw else ""
         out.append({
             "question": question or "Unknown",
             "slug": event_slug or slug,
+            "event_id": event_id,
+            "event_title": title,
+            "end_date": end_date,
             "condition_id": condition_id,
             "liquidity": liquidity,
             "volume": volume,
