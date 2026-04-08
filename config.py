@@ -73,6 +73,9 @@ WHALE_ALERTS_PATH = _ROOT / "whale_alerts.json"
 # Multi-outcome event spotlight (Politics + Economy digests; min sibling markets)
 POLITICS_SPOTLIGHT_MIN_MARKETS = 2
 POLITICS_SPOTLIGHT_MAX_LINES = 8
+# Looser than TOPIC_MIN_* so all siblings of a macro event can form a group (Gamma scan is capped).
+SPOTLIGHT_MIN_LIQUIDITY = 500.0
+SPOTLIGHT_MIN_VOLUME_24H = 800.0
 
 # Economy digest: max crypto-related items in the top-4 (rest is macro/non-crypto economy)
 ECONOMY_DIGEST_MAX_CRYPTO = 2

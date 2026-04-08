@@ -221,14 +221,16 @@ def fetch_all_markets(max_markets: int | None = None) -> list[dict]:
     for ev in events:
         if not isinstance(ev, dict):
             continue
-        for row in event_to_markets(ev):
+        rows = event_to_markets(ev)
+        for row in rows:
             key = (row.get("question"), row.get("slug"))
             if key in seen:
                 continue
             seen.add(key)
             result.append(row)
-            if len(result) >= limit:
-                logger.info("Fetched %s markets from Polymarket", len(result))
-                return result
+        # Never stop mid-event: siblings share event_id and are required for "one scenario — different deadlines".
+        if len(result) >= limit:
+            logger.info("Fetched %s markets from Polymarket", len(result))
+            return result
     logger.info("Fetched %s markets from Polymarket", len(result))
     return result

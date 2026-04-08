@@ -201,6 +201,41 @@ def is_crypto_economy_market(market: dict) -> bool:
     return any(s in hay for s in _CRYPTO_SUBSTR)
 
 
+# Macro economy multi-outcome events sometimes sit under Tech/Other tags on Polymarket; still show in economy spotlight.
+_MACRO_ECONOMY_SPOTLIGHT_SUBSTR = (
+    "largest company",
+    "world's largest",
+    "biggest company",
+    "largest in the world",
+    "company by market cap",
+    "largest firm",
+    "fed decision",
+    "will the fed",
+    "fomc",
+    "federal funds",
+    "interest rate ",
+    "us recession",
+    "recession in",
+    "recession by",
+    "gdp ",
+    "cpi ",
+    "inflation ",
+    "nonfarm",
+    "payrolls",
+    "unemployment rate",
+    "treasury ",
+    "yield curve",
+)
+
+
+def macro_economy_spotlight_match(market: dict) -> bool:
+    """True if question/event title looks like macro economy (for spotlight grouping when topic is not economy)."""
+    q = str(market.get("question") or "").lower()
+    et = str(market.get("event_title") or "").lower()
+    hay = f"{q} {et}"
+    return any(s in hay for s in _MACRO_ECONOMY_SPOTLIGHT_SUBSTR)
+
+
 def _normalize(value: float, min_v: float, max_v: float) -> float:
     if max_v <= min_v:
         return 0.0
@@ -442,19 +477,23 @@ def select_economy_digest_markets(
 
 def _build_topic_event_spotlight(
     all_markets: list[dict],
-    topic: str,
+    topic: str | None,
     *,
     market_include: Callable[[dict], bool] | None = None,
 ) -> dict | None:
     """
     Multi-outcome event (same event_id) with highest total liquidity across sibling markets.
+    If topic is None, only market_include filters (used for economy + macro cross-tag events).
     Optional market_include(m) — if False, skip market (e.g. exclude crypto for economy spotlight).
     """
     from collections import defaultdict
 
+    min_liq = float(getattr(config, "SPOTLIGHT_MIN_LIQUIDITY", config.TOPIC_MIN_LIQUIDITY))
+    min_vol = float(getattr(config, "SPOTLIGHT_MIN_VOLUME_24H", config.TOPIC_MIN_VOLUME_24H))
+
     by_event: dict[str, list[dict]] = defaultdict(list)
     for m in all_markets:
-        if classify_topic(m) != topic:
+        if topic is not None and classify_topic(m) != topic:
             continue
         if market_include is not None and not market_include(m):
             continue
@@ -463,7 +502,7 @@ def _build_topic_event_spotlight(
             continue
         liq = _safe_float(m.get("liquidity"))
         vol24 = _safe_float(m.get("volume_24h") or m.get("volume"))
-        if liq < config.TOPIC_MIN_LIQUIDITY or vol24 < config.TOPIC_MIN_VOLUME_24H:
+        if liq < min_liq or vol24 < min_vol:
             continue
         if m.get("current_probability") is None:
             continue
@@ -501,11 +540,19 @@ def build_politics_event_spotlight(all_markets: list[dict]) -> dict | None:
 
 
 def build_economy_event_spotlight(all_markets: list[dict]) -> dict | None:
-    """Economy digest: same block, only non-crypto macro economy events."""
+    """Economy digest: non-crypto markets classified as economy OR clear macro headlines (Fed, recession, largest company, …)."""
+
+    def _economy_spotlight_include(m: dict) -> bool:
+        if is_crypto_economy_market(m):
+            return False
+        if classify_topic(m) == TOPIC_ECONOMY:
+            return True
+        return macro_economy_spotlight_match(m)
+
     return _build_topic_event_spotlight(
         all_markets,
-        TOPIC_ECONOMY,
-        market_include=lambda m: not is_crypto_economy_market(m),
+        None,
+        market_include=_economy_spotlight_include,
     )
 
 
@@ -581,9 +628,9 @@ def build_topic_brief_data(
     use_rotation = not (window_hours and window_hours > 0)
     prev_ids = get_yesterday_digest_condition_ids(topic) if use_rotation else set()
     event_spotlight = None
-    if use_rotation and topic == TOPIC_POLITICS:
+    if topic == TOPIC_POLITICS:
         event_spotlight = build_politics_event_spotlight(markets)
-    elif use_rotation and topic == TOPIC_ECONOMY:
+    elif topic == TOPIC_ECONOMY:
         event_spotlight = build_economy_event_spotlight(markets)
 
     spotlight_cids: set[str] = set()

@@ -4,6 +4,7 @@ import pytest
 from analyzer import (
     filter_and_rank,
     is_crypto_economy_market,
+    macro_economy_spotlight_match,
     select_digest_markets,
     select_economy_digest_markets,
 )
@@ -126,6 +127,16 @@ def test_is_crypto_economy_market():
     assert is_crypto_economy_market({"question": "Will Bitcoin hit 100k?", "tags": []})
     assert is_crypto_economy_market({"question": "Fed rate cut", "tags": ["bitcoin"]})
     assert not is_crypto_economy_market({"question": "US recession by 2026?", "tags": ["economy"]})
+
+
+def test_macro_economy_spotlight_match():
+    assert macro_economy_spotlight_match(
+        {"question": "NVIDIA largest by market cap?", "event_title": "Largest Company end of June?"}
+    )
+    assert macro_economy_spotlight_match({"question": "Fed decision in April?", "event_title": "Fed"})
+    assert not macro_economy_spotlight_match(
+        {"question": "MegaETH FDV above $600M one day after launch?", "event_title": "MegaETH"}
+    )
 
 
 def test_select_economy_digest_first_two_non_crypto_cap_crypto():
