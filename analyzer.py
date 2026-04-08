@@ -5,6 +5,7 @@ Keeps legacy helpers for compatibility with existing tests.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Any
 
@@ -171,6 +172,35 @@ def classify_topic(market: dict) -> str:
     return TOPIC_OTHER
 
 
+# Crypto-heavy economy markets (Fed / recession / equities stay non-crypto).
+_CRYPTO_TAG_SLUGS = frozenset({
+    "crypto", "bitcoin", "ethereum", "defi", "nft", "solana", "altcoin", "dogecoin",
+    "chainlink", "polygon", "matic", "avalanche", "cardano", "xrp", "ripple",
+    "microstrategy", "coinbase", "bitcoin-etf", "spot-bitcoin", "memecoin",
+    "web3", "layer-2", "layer2", "stablecoin", "cbdc",
+})
+_CRYPTO_SUBSTR = (
+    "bitcoin", "btc ", " btc", "ethereum", "eth ", " ether", "solana", "defi",
+    "nft ", "crypto ", "stablecoin", " usdt", " usdc", "dogecoin", "shiba",
+    "microstrategy", "coinbase", " grayscale", "spot etf", "bitcoin etf",
+    "layer 2", "layer-2", "altcoin", "memecoin", "proof-of-stake", "proof of stake",
+    "satoshi", "halving", "on-chain", "defi ", "yield farm",
+)
+
+
+def is_crypto_economy_market(market: dict) -> bool:
+    """True if market is treated as crypto-themed (for economy digest caps)."""
+    tags = [str(t).lower() for t in (market.get("tags") or [])]
+    tag_set = set(tags)
+    if tag_set.intersection(_CRYPTO_TAG_SLUGS):
+        return True
+    q = str(market.get("question") or "").lower()
+    cat = str(market.get("category") or "").lower()
+    sub = str(market.get("subcategory") or "").lower()
+    hay = " ".join([cat, sub, " ".join(tags), q])
+    return any(s in hay for s in _CRYPTO_SUBSTR)
+
+
 def _normalize(value: float, min_v: float, max_v: float) -> float:
     if max_v <= min_v:
         return 0.0
@@ -293,16 +323,140 @@ def select_digest_markets(
     return selected[:count]
 
 
-def build_politics_event_spotlight(all_markets: list[dict]) -> dict | None:
+def _digest_candidate_ok(
+    m: dict,
+    selected: list[dict],
+    prev_ids: set[str],
+    count: int,
+    max_rep: int,
+    exclude: set[str],
+) -> bool:
+    def cid(x: dict) -> str:
+        return str(x.get("condition_id") or "")
+
+    c = cid(m)
+    if not c or c in exclude:
+        return False
+    if any(cid(x) == c for x in selected):
+        return False
+    min_new = max(0, count - max_rep)
+    n_old = sum(1 for x in selected if cid(x) in prev_ids)
+    n_new = len(selected) - n_old
+    is_old = c in prev_ids
+    slots_left = count - len(selected)
+    if is_old:
+        if n_old >= max_rep:
+            return False
+        remaining_after = slots_left - 1
+        need_new = max(0, min_new - n_new)
+        if need_new > remaining_after:
+            return False
+    return True
+
+
+def select_economy_digest_markets(
+    ranked_for_top: list[dict],
+    prev_ids: set[str],
+    count: int,
+    exclude_condition_ids: set[str] | None = None,
+) -> list[dict]:
     """
-    One multi-market political event with highest total liquidity across sibling markets
-    (e.g. same theme, different deadlines). Used only in Politics digest.
+    Economy top-N: positions 1–2 are non-crypto macro; at most ECONOMY_DIGEST_MAX_CRYPTO
+    crypto items in the full list; same yesterday-rotation rules as select_digest_markets.
+    """
+    if count <= 0:
+        return []
+    exclude = {str(x) for x in (exclude_condition_ids or set()) if x}
+    prev_ids = {str(x) for x in (prev_ids or set()) if x}
+    max_rep = int(getattr(config, "TOPIC_DIGEST_MAX_REPEAT_PREVIOUS_DAY", 1))
+    max_crypto = int(getattr(config, "ECONOMY_DIGEST_MAX_CRYPTO", 2))
+
+    def cid(x: dict) -> str:
+        return str(x.get("condition_id") or "")
+
+    selected: list[dict] = []
+
+    while len(selected) < 2 and len(selected) < count:
+        added = False
+        for m in ranked_for_top:
+            if is_crypto_economy_market(m):
+                continue
+            if not _digest_candidate_ok(m, selected, prev_ids, count, max_rep, exclude):
+                continue
+            selected.append(m)
+            added = True
+            break
+        if not added:
+            break
+
+    while len(selected) < count:
+        added = False
+        for m in ranked_for_top:
+            c = cid(m)
+            if not c or c in exclude or c in {cid(x) for x in selected}:
+                continue
+            if is_crypto_economy_market(m):
+                if sum(1 for x in selected if is_crypto_economy_market(x)) >= max_crypto:
+                    continue
+            if not _digest_candidate_ok(m, selected, prev_ids, count, max_rep, exclude):
+                continue
+            selected.append(m)
+            added = True
+            break
+        if not added:
+            break
+
+    while len(selected) < count:
+        added = False
+        for m in ranked_for_top:
+            c = cid(m)
+            if not c or c in exclude or c in {cid(x) for x in selected}:
+                continue
+            if len(selected) < 2 and is_crypto_economy_market(m):
+                continue
+            if is_crypto_economy_market(m):
+                if sum(1 for x in selected if is_crypto_economy_market(x)) >= max_crypto:
+                    continue
+            selected.append(m)
+            added = True
+            break
+        if not added:
+            break
+
+    if len(selected) < count:
+        for m in ranked_for_top:
+            if len(selected) >= count:
+                break
+            c = cid(m)
+            if not c or c in exclude or c in {cid(x) for x in selected}:
+                continue
+            if len(selected) < 2 and is_crypto_economy_market(m):
+                continue
+            if is_crypto_economy_market(m):
+                if sum(1 for x in selected if is_crypto_economy_market(x)) >= max_crypto:
+                    continue
+            selected.append(m)
+
+    return selected[:count]
+
+
+def _build_topic_event_spotlight(
+    all_markets: list[dict],
+    topic: str,
+    *,
+    market_include: Callable[[dict], bool] | None = None,
+) -> dict | None:
+    """
+    Multi-outcome event (same event_id) with highest total liquidity across sibling markets.
+    Optional market_include(m) — if False, skip market (e.g. exclude crypto for economy spotlight).
     """
     from collections import defaultdict
 
     by_event: dict[str, list[dict]] = defaultdict(list)
     for m in all_markets:
-        if classify_topic(m) != TOPIC_POLITICS:
+        if classify_topic(m) != topic:
+            continue
+        if market_include is not None and not market_include(m):
             continue
         evid = str(m.get("event_id") or "").strip()
         if not evid:
@@ -339,6 +493,20 @@ def build_politics_event_spotlight(all_markets: list[dict]) -> dict | None:
         "total_liquidity": round(best_total_liq, 0),
         "markets": ms_sorted[:cap],
     }
+
+
+def build_politics_event_spotlight(all_markets: list[dict]) -> dict | None:
+    """Politics digest: multi-deadline event spotlight."""
+    return _build_topic_event_spotlight(all_markets, TOPIC_POLITICS, market_include=None)
+
+
+def build_economy_event_spotlight(all_markets: list[dict]) -> dict | None:
+    """Economy digest: same block, only non-crypto macro economy events."""
+    return _build_topic_event_spotlight(
+        all_markets,
+        TOPIC_ECONOMY,
+        market_include=lambda m: not is_crypto_economy_market(m),
+    )
 
 
 def _is_recent_market(market: dict, window_hours: float) -> bool:
@@ -412,25 +580,34 @@ def build_topic_brief_data(
     ranked = _dedupe_near_duplicates(ranked)
     use_rotation = not (window_hours and window_hours > 0)
     prev_ids = get_yesterday_digest_condition_ids(topic) if use_rotation else set()
-    politics_spotlight = (
-        build_politics_event_spotlight(markets)
-        if (use_rotation and topic == TOPIC_POLITICS)
-        else None
-    )
+    event_spotlight = None
+    if use_rotation and topic == TOPIC_POLITICS:
+        event_spotlight = build_politics_event_spotlight(markets)
+    elif use_rotation and topic == TOPIC_ECONOMY:
+        event_spotlight = build_economy_event_spotlight(markets)
+
     spotlight_cids: set[str] = set()
-    if isinstance(politics_spotlight, dict):
-        for sm in politics_spotlight.get("markets") or []:
+    if isinstance(event_spotlight, dict):
+        for sm in event_spotlight.get("markets") or []:
             sc = str(sm.get("condition_id") or "").strip()
             if sc:
                 spotlight_cids.add(sc)
     ranked_for_top = [m for m in ranked if str(m.get("condition_id") or "").strip() not in spotlight_cids]
     if use_rotation:
-        top_n = select_digest_markets(
-            ranked_for_top,
-            prev_ids,
-            config.TOPIC_TOP_MARKETS,
-            exclude_condition_ids=spotlight_cids,
-        )
+        if topic == TOPIC_ECONOMY:
+            top_n = select_economy_digest_markets(
+                ranked_for_top,
+                prev_ids,
+                config.TOPIC_TOP_MARKETS,
+                exclude_condition_ids=spotlight_cids,
+            )
+        else:
+            top_n = select_digest_markets(
+                ranked_for_top,
+                prev_ids,
+                config.TOPIC_TOP_MARKETS,
+                exclude_condition_ids=spotlight_cids,
+            )
     else:
         top_n = ranked_for_top[: config.TOPIC_TOP_MARKETS]
 
@@ -443,7 +620,7 @@ def build_topic_brief_data(
         "biggest_move": biggest_move,
         "most_active": most_active,
         "period_label": top_n[0].get("period_label") if top_n else "24 часа",
-        "politics_spotlight": politics_spotlight,
+        "event_spotlight": event_spotlight,
         "record_rotation": use_rotation,
     }
 

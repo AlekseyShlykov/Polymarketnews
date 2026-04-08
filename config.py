@@ -70,9 +70,12 @@ WHALE_BET_USD_THRESHOLD = 100000.0
 WHALE_SPORTS_OTHER_USD_THRESHOLD = 300000.0
 WHALE_ALERTS_PATH = _ROOT / "whale_alerts.json"
 
-# Politics digest: multi-market event spotlight (min sibling markets)
+# Multi-outcome event spotlight (Politics + Economy digests; min sibling markets)
 POLITICS_SPOTLIGHT_MIN_MARKETS = 2
 POLITICS_SPOTLIGHT_MAX_LINES = 8
+
+# Economy digest: max crypto-related items in the top-4 (rest is macro/non-crypto economy)
+ECONOMY_DIGEST_MAX_CRYPTO = 2
 
 # Gemini
 GEMINI_MODEL = "gemini-2.5-flash-lite"

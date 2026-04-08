@@ -343,7 +343,7 @@ def format_topic_brief(data: dict) -> str:
     biggest = data.get("biggest_move") or {}
     most_active = data.get("most_active") or {}
     period_label = data.get("period_label") or "24 часа"
-    spotlight = data.get("politics_spotlight")
+    spotlight = data.get("event_spotlight") or data.get("politics_spotlight")
 
     # Collect all unique questions to translate (+ politics event title if present).
     source_questions: list[str] = []
@@ -379,7 +379,7 @@ def format_topic_brief(data: dict) -> str:
         "most_active": {"question": most_active.get("question"), "volume_24h": most_active.get("volume_24h")},
     }
     if isinstance(spotlight, dict) and spotlight.get("markets"):
-        gemini_payload["politics_spotlight"] = {
+        gemini_payload["event_spotlight"] = {
             "theme": spotlight.get("event_title"),
             "total_liquidity": spotlight.get("total_liquidity"),
             "variants": [

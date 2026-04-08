@@ -1,7 +1,12 @@
 """Tests for analyzer: delta, filtering, ranking."""
 import pytest
 
-from analyzer import filter_and_rank, select_digest_markets
+from analyzer import (
+    filter_and_rank,
+    is_crypto_economy_market,
+    select_digest_markets,
+    select_economy_digest_markets,
+)
 
 
 def test_filter_by_liquidity():
@@ -115,3 +120,23 @@ def test_skip_missing_delta():
     out = filter_and_rank(items, min_liquidity=0, min_abs_delta=0, max_items=10)
     assert len(out) == 1
     assert out[0]["question"] == "With delta"
+
+
+def test_is_crypto_economy_market():
+    assert is_crypto_economy_market({"question": "Will Bitcoin hit 100k?", "tags": []})
+    assert is_crypto_economy_market({"question": "Fed rate cut", "tags": ["bitcoin"]})
+    assert not is_crypto_economy_market({"question": "US recession by 2026?", "tags": ["economy"]})
+
+
+def test_select_economy_digest_first_two_non_crypto_cap_crypto():
+    ranked = [
+        {"condition_id": "c1", "question": "Bitcoin to moon"},
+        {"condition_id": "c2", "question": "Ethereum flip"},
+        {"condition_id": "m1", "question": "Fed decision April"},
+        {"condition_id": "m2", "question": "Recession 2026"},
+        {"condition_id": "m3", "question": "Largest company June"},
+        {"condition_id": "c3", "question": "Solana ETF"},
+    ]
+    out = select_economy_digest_markets(ranked, set(), 4)
+    assert [x["condition_id"] for x in out[:2]] == ["m1", "m2"]
+    assert sum(1 for x in out if "Bitcoin" in x["question"] or "Ethereum" in x["question"] or "Solana" in x["question"]) <= 2
