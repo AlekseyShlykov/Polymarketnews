@@ -56,6 +56,8 @@ TOPIC_MIN_LIQUIDITY = 1000.0
 TOPIC_MIN_VOLUME_24H = 3000.0
 TOPIC_TOP_MARKETS = 4
 TOPIC_MOVED_MAX = 1
+# Max markets in today's top-N that may repeat yesterday's condition_ids (rest must be fresh).
+TOPIC_DIGEST_MAX_REPEAT_PREVIOUS_DAY = 1
 
 # Simple, robust importance score weights.
 IMPORTANCE_W_VOLUME = 0.45

@@ -83,8 +83,22 @@ def test_select_digest_prefers_fresh_when_possible():
     out = select_digest_markets(ranked, prev, 4)
     ids = [x["condition_id"] for x in out]
     assert len(out) == 4
-    assert ids.count("old1") + ids.count("old2") <= 2
-    assert sum(1 for i in ids if i not in prev) >= 2
+    assert sum(1 for i in ids if i in prev) <= 1
+    assert sum(1 for i in ids if i not in prev) >= 3
+
+
+def test_select_digest_excludes_spotlight_ids():
+    ranked = [
+        {"condition_id": "spot1", "question": "S1"},
+        {"condition_id": "x1", "question": "X1"},
+        {"condition_id": "x2", "question": "X2"},
+        {"condition_id": "x3", "question": "X3"},
+        {"condition_id": "x4", "question": "X4"},
+    ]
+    out = select_digest_markets(ranked, set(), 4, exclude_condition_ids={"spot1"})
+    ids = [x["condition_id"] for x in out]
+    assert "spot1" not in ids
+    assert len(out) == 4
 
 
 def test_select_digest_all_new_when_no_history():

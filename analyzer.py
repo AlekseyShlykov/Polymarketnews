@@ -86,8 +86,10 @@ _POLITICS_TAG_SLUGS = frozenset({
     "foreign-policy", "international-relations", "diplomacy", "nato", "united-nations",
     "ukraine", "russia", "israel", "palestine", "iran", "middle-east", "gaza", "syria",
     "china", "taiwan", "india", "pakistan", "north-korea", "south-korea", "japan",
-    "defense", "military", "conflict", "war", "ceasefire", "sanctions", "summit",
+    "defense", "military", "conflict", "war", "ceasefire", "cease-fire", "sanctions", "summit",
     "macron", "starmer", "eu-politics", "brexit", "election", "parliament",
+    "hormuz", "strait-of-hormuz", "red-sea", "bab-el-mandeb", "chokepoint", "maritime",
+    "regime-change", "regime-collapse", "government-collapse", "iran-nuclear",
 })
 _ECONOMY_TAG_SLUGS = frozenset({
     "economy", "economic", "macro", "inflation", "recession", "fed", "interest-rates",
@@ -105,15 +107,21 @@ _SPORTS_TAG_SLUGS = frozenset({
 _POLITICS_SUBSTR = (
     "geopolit", "foreign policy", "foreign-policy", "united nations", "legislation",
     "government shutdown", "white house", "kremlin", "nato", "sanction", "ceasefire",
+    "cease fire", "cease-fire", "truce", "de-escalation", "deescalation",
     "invasion", "military", "diplom", "embassy", "ambassador", "treaty", "summit",
     "referendum", "parliament", "congressional", "senate race", "presidential",
-    "ukraine", "russia", "zelensky", "putin", "iran", "israel", "palestine", "gaza",
-    "middle east", "south china sea", "taiwan strait", "north korea", "ballistic",
+    "ukraine", "russia", "zelensky", "putin", "iran", "tehran", "israel", "palestine", "gaza",
+    "middle east", "persian gulf", "arabian gulf", "strait of hormuz", "hormuz",
+    "bab el-mandeb", "red sea", "suez", "chokepoint", "south china sea", "taiwan strait",
+    "north korea", "ballistic",
     "crimea", "donbas", "humanitarian", "coup", "insurg", "terror", "border",
     "territory", "occupation", "peace deal", "two-state", "settlements", "hezbollah",
     "houthis", "yemen", "syria", "lebanon", "iraq", "afghanistan", "libya", "sudan",
     "sub-saharan", "africa politics", "latin america politics", "election", "electoral",
     "impeach", "cabinet", "prime minister", "chancellor", "dictator", "authoritarian",
+    "regime change", "regime fall", "regime collapse", "government collapse", "fall of",
+    "oust", "step down", "mobilization", "mobilisation", "martial law", "annexation",
+    "recognition of", "breakaway", "separatist", "insurrection",
 )
 _ECONOMY_SUBSTR = (
     "economy", "macro", "inflation", "recession", "fed ", "federal reserve", "interest rate",
@@ -193,14 +201,28 @@ def _dedupe_near_duplicates(markets: list[dict]) -> list[dict]:
     return out
 
 
-def select_digest_markets(ranked: list[dict], prev_ids: set[str], count: int) -> list[dict]:
+def select_digest_markets(
+    ranked: list[dict],
+    prev_ids: set[str],
+    count: int,
+    *,
+    exclude_condition_ids: set[str] | None = None,
+    max_repeat_from_prev: int | None = None,
+) -> list[dict]:
     """
     Pick `count` markets in global rank order with rotation vs yesterday:
-    at least 2 markets not in prev_ids, at most 2 from prev_ids (when possible).
+    at most `max_repeat_from_prev` from prev_ids, at least (count - that) new when possible.
+    Skips any condition_id in exclude_condition_ids (e.g. politics spotlight markets).
     """
     if count <= 0:
         return []
     prev_ids = {str(x) for x in (prev_ids or set()) if x}
+    exclude = {str(x) for x in (exclude_condition_ids or set()) if x}
+    max_rep = max_repeat_from_prev
+    if max_rep is None:
+        max_rep = int(getattr(config, "TOPIC_DIGEST_MAX_REPEAT_PREVIOUS_DAY", 1))
+    max_rep = max(0, min(max_rep, count))
+    min_new_required = max(0, count - max_rep)
 
     def cid(m: dict) -> str:
         return str(m.get("condition_id") or "")
@@ -212,29 +234,28 @@ def select_digest_markets(ranked: list[dict], prev_ids: set[str], count: int) ->
         if len(selected) >= count:
             break
         c = cid(m)
-        if not c or c in selected_ids:
+        if not c or c in selected_ids or c in exclude:
             continue
         n_old = sum(1 for x in selected if cid(x) in prev_ids)
         n_new = len(selected) - n_old
         is_old = c in prev_ids
         slots_left = count - len(selected)
         if is_old:
-            if n_old >= 2:
+            if n_old >= max_rep:
                 continue
             remaining_after = slots_left - 1
-            need_new = max(0, 2 - n_new)
+            need_new = max(0, min_new_required - n_new)
             if need_new > remaining_after:
                 continue
         selected.append(m)
         selected_ids.add(c)
 
     if len(selected) < count:
-        # Prefer any remaining *new* markets first (keeps ≤2 repeats when pool allows).
         for m in ranked:
             if len(selected) >= count:
                 break
             c = cid(m)
-            if not c or c in selected_ids or c in prev_ids:
+            if not c or c in selected_ids or c in exclude or c in prev_ids:
                 continue
             selected.append(m)
             selected_ids.add(c)
@@ -244,16 +265,16 @@ def select_digest_markets(ranked: list[dict], prev_ids: set[str], count: int) ->
             if len(selected) >= count:
                 break
             c = cid(m)
-            if not c or c in selected_ids:
+            if not c or c in selected_ids or c in exclude:
                 continue
             n_old = sum(1 for x in selected if cid(x) in prev_ids)
-            if c in prev_ids and n_old >= 2:
+            if c in prev_ids and n_old >= max_rep:
                 continue
             n_new = len(selected) - n_old
             slots_left = count - len(selected)
             if c in prev_ids:
                 remaining_after = slots_left - 1
-                need_new = max(0, 2 - n_new)
+                need_new = max(0, min_new_required - n_new)
                 if need_new > remaining_after:
                     continue
             selected.append(m)
@@ -264,7 +285,7 @@ def select_digest_markets(ranked: list[dict], prev_ids: set[str], count: int) ->
             if len(selected) >= count:
                 break
             c = cid(m)
-            if not c or c in selected_ids:
+            if not c or c in selected_ids or c in exclude:
                 continue
             selected.append(m)
             selected_ids.add(c)
@@ -396,10 +417,22 @@ def build_topic_brief_data(
         if (use_rotation and topic == TOPIC_POLITICS)
         else None
     )
+    spotlight_cids: set[str] = set()
+    if isinstance(politics_spotlight, dict):
+        for sm in politics_spotlight.get("markets") or []:
+            sc = str(sm.get("condition_id") or "").strip()
+            if sc:
+                spotlight_cids.add(sc)
+    ranked_for_top = [m for m in ranked if str(m.get("condition_id") or "").strip() not in spotlight_cids]
     if use_rotation:
-        top_n = select_digest_markets(ranked, prev_ids, config.TOPIC_TOP_MARKETS)
+        top_n = select_digest_markets(
+            ranked_for_top,
+            prev_ids,
+            config.TOPIC_TOP_MARKETS,
+            exclude_condition_ids=spotlight_cids,
+        )
     else:
-        top_n = ranked[: config.TOPIC_TOP_MARKETS]
+        top_n = ranked_for_top[: config.TOPIC_TOP_MARKETS]
 
     biggest_move = max(ranked, key=lambda x: abs(_safe_float(x.get("delta_24h"))), default=None)
     most_active = max(ranked, key=lambda x: _safe_float(x.get("volume_24h")), default=None)

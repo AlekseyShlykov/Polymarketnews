@@ -11,8 +11,8 @@ Bot posts exactly 4 thematic briefs per day (in Russian) and separate whale aler
 
 Each post contains:
 - short Russian intro (Gemini rewrite, strict data-only prompt)
-- top **4** markets for the topic (vs yesterday’s digest: at most 2 repeats, at least 2 new `condition_id`s when the pool allows)
-- **Politics only:** extra block “Один сценарий — разные сроки” — one multi-outcome event with the highest total liquidity across its markets, with probability per deadline variant
+- top **4** markets for the topic (vs yesterday’s digest: **at most 1** repeat, **at least 3** new `condition_id`s when the pool allows; `TOPIC_DIGEST_MAX_REPEAT_PREVIOUS_DAY` in `config.py`)
+- **Politics only:** after the top 4, block “Один сценарий — разные сроки” — one multi-outcome event (highest total liquidity); its markets are **excluded** from the numbered top-4 list
 - biggest move in 24h
 - most active market in 24h
 

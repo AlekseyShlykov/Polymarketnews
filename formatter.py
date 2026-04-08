@@ -397,6 +397,16 @@ def format_topic_brief(data: dict) -> str:
 
     lines = [f"Polymarket — {topic_ru}", "", "Что считает рынок:", intro, ""]
 
+    for idx, m in enumerate(top, 1):
+        src_q = _clean_text(m.get("question"))
+        q = _clickable_question(q_map.get(src_q, src_q), m.get("slug"))
+        old_p = _fmt_pct(m.get("display_previous_probability", m.get("previous_probability")))
+        new_p = _fmt_pct(m.get("current_probability"))
+        lines.append(f"{idx}. {q}")
+        lines.append(f"Вероятность: {new_p}")
+        lines.append(f"За {period_label}: {old_p} → {new_p}")
+        lines.append("")
+
     if isinstance(spotlight, dict) and spotlight.get("markets"):
         slug_sp = (spotlight.get("event_slug") or "").strip()
         et_src = _clean_text(spotlight.get("event_title"))
@@ -411,16 +421,6 @@ def format_topic_brief(data: dict) -> str:
             ed = _short_end_date(sm.get("end_date"))
             pv = _fmt_pct(sm.get("current_probability"))
             lines.append(f"• {qline} — до {ed}: {pv}")
-        lines.append("")
-
-    for idx, m in enumerate(top, 1):
-        src_q = _clean_text(m.get("question"))
-        q = _clickable_question(q_map.get(src_q, src_q), m.get("slug"))
-        old_p = _fmt_pct(m.get("display_previous_probability", m.get("previous_probability")))
-        new_p = _fmt_pct(m.get("current_probability"))
-        lines.append(f"{idx}. {q}")
-        lines.append(f"Вероятность: {new_p}")
-        lines.append(f"За {period_label}: {old_p} → {new_p}")
         lines.append("")
 
     if biggest:
