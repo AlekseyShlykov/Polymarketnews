@@ -68,6 +68,10 @@ IMPORTANCE_W_RECENCY = 0.10
 # Whale alerts (politics/economy use base threshold; sports/other need higher bar)
 WHALE_BET_USD_THRESHOLD = 100000.0
 WHALE_SPORTS_OTHER_USD_THRESHOLD = 300000.0
+# Same market can alert again after this many hours (not a permanent block).
+WHALE_ALERT_COOLDOWN_HOURS = 24.0
+# Scan more markets for whales than for digests so hot politics/economy events are not missed.
+WHALE_MAX_MARKETS_TO_SCAN = 400
 WHALE_ALERTS_PATH = _ROOT / "whale_alerts.json"
 
 # Multi-outcome event spotlight (Politics + Economy digests; min sibling markets)

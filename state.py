@@ -241,11 +241,11 @@ def load_whale_alerts() -> dict:
     """whale_alerts.json storage with backward compatibility."""
     raw = load_json(WHALE_ALERTS_PATH, {})
     if not isinstance(raw, dict):
-        return {"alerted": {}, "last_volume_24h": {}, "last_checked_at": None}
+        return {"alerted": {}, "last_cumulative_volume": {}, "last_checked_at": None}
     # Backward compatibility: old format was plain {alert_id: timestamp}
     if "alerted" not in raw:
-        return {"alerted": dict(raw), "last_volume_24h": {}, "last_checked_at": None}
-    raw.setdefault("last_volume_24h", {})
+        return {"alerted": dict(raw), "last_cumulative_volume": {}, "last_checked_at": None}
+    raw.setdefault("last_cumulative_volume", {})
     raw.setdefault("last_checked_at", None)
     return raw
 
@@ -257,6 +257,28 @@ def save_whale_alerts(data: dict) -> None:
 def is_whale_alerted(alert_id: str) -> bool:
     data = load_whale_alerts()
     return bool((data.get("alerted") or {}).get(alert_id))
+
+
+def whale_alert_in_cooldown(
+    alert_id: str,
+    alerted_map: dict,
+    cooldown_hours: float,
+    *,
+    now: datetime | None = None,
+) -> bool:
+    """True if we already sent a whale alert for this market within cooldown_hours."""
+    ts_str = (alerted_map or {}).get(str(alert_id))
+    if not ts_str:
+        return False
+    now = now or _now_utc()
+    try:
+        at = datetime.fromisoformat(str(ts_str).replace("Z", "+00:00"))
+        if at.tzinfo is None:
+            at = at.replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return False
+    elapsed = (now - at).total_seconds()
+    return elapsed < max(0.0, float(cooldown_hours)) * 3600.0
 
 
 def mark_whale_alerted(alert_id: str) -> None:
@@ -272,21 +294,28 @@ def mark_whale_alerted(alert_id: str) -> None:
 
 
 def get_whale_volume_snapshot() -> dict[str, float]:
+    """
+    Last run's cumulative market volume (Gamma volumeNum), per condition_id.
+    Used to compute traded notional since the previous whale check.
+    If missing (first deploy after this change), returns {} so the first run rebaselines without false spikes.
+    """
     data = load_whale_alerts()
-    raw = data.get("last_volume_24h") or {}
+    raw = data.get("last_cumulative_volume")
+    if not isinstance(raw, dict) or not raw:
+        return {}
     out: dict[str, float] = {}
-    if isinstance(raw, dict):
-        for k, v in raw.items():
-            try:
-                out[str(k)] = float(v)
-            except (TypeError, ValueError):
-                continue
+    for k, v in raw.items():
+        try:
+            out[str(k)] = float(v)
+        except (TypeError, ValueError):
+            continue
     return out
 
 
 def set_whale_volume_snapshot(volumes: dict[str, float]) -> None:
     data = load_whale_alerts()
-    data["last_volume_24h"] = {str(k): float(v) for k, v in volumes.items() if k and v is not None}
+    data["last_cumulative_volume"] = {str(k): float(v) for k, v in volumes.items() if k and v is not None}
+    data.pop("last_volume_24h", None)
     data["last_checked_at"] = _now_utc().isoformat()
     save_whale_alerts(data)
 

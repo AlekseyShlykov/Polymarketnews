@@ -17,6 +17,7 @@ from state import (
     load_whale_alerts,
     mark_whale_alerted,
     set_whale_volume_snapshot,
+    whale_alert_in_cooldown,
 )
 
 logger = logging.getLogger(__name__)
@@ -674,23 +675,30 @@ def build_topic_brief_data(
 
 def detect_whale_alerts(max_markets: int | None = None) -> list[dict]:
     """
-    Approximation for "trade in last interval":
-    compare current volume_24h with previous whale-check snapshot.
-    If volume increase over the interval >= threshold, treat as whale-sized trade flow.
+    Detect large notional traded since the last whale check.
+
+    Uses **cumulative** Gamma ``volume`` (volumeNum): delta since the previous snapshot is
+    approximately USD traded in the interval. Comparing rolling ``volume_24h`` between runs
+    is misleading (the 24h window shifts), so it often missed real whale flow.
+
+    The same ``condition_id`` can alert again after ``WHALE_ALERT_COOLDOWN_HOURS``; it is
+    not blocked forever once alerted.
     """
-    markets = fetch_all_markets(max_markets or config.MAX_MARKETS_TO_SCAN)
+    scan = max_markets or int(getattr(config, "WHALE_MAX_MARKETS_TO_SCAN", config.MAX_MARKETS_TO_SCAN))
+    markets = fetch_all_markets(scan)
     whale_data = load_whale_alerts()
     alerted_map = whale_data.get("alerted") or {}
+    cooldown_h = float(getattr(config, "WHALE_ALERT_COOLDOWN_HOURS", 24.0))
     previous_snapshot = get_whale_volume_snapshot()
     current_snapshot: dict[str, float] = {}
     alerts: list[dict] = []
     for m in markets:
         alert_id = str(m.get("condition_id") or m.get("slug") or m.get("question") or "")
-        vol24 = _safe_float(m.get("volume_24h") or m.get("volume"))
+        vol_cum = _safe_float(m.get("volume"))
         if alert_id:
-            current_snapshot[alert_id] = vol24
-        prev_vol24 = previous_snapshot.get(alert_id, vol24)
-        interval_volume_delta = max(0.0, vol24 - prev_vol24)
+            current_snapshot[alert_id] = vol_cum
+        prev_cum = previous_snapshot.get(alert_id, vol_cum)
+        interval_traded = max(0.0, vol_cum - prev_cum)
         tpc = classify_topic(m)
         if tpc == TOPIC_OTHER:
             continue
@@ -698,20 +706,21 @@ def detect_whale_alerts(max_markets: int | None = None) -> list[dict]:
             threshold = config.WHALE_SPORTS_OTHER_USD_THRESHOLD
         else:
             threshold = config.WHALE_BET_USD_THRESHOLD
-        if interval_volume_delta < threshold:
+        if interval_traded < threshold:
             continue
-        if not alert_id or alerted_map.get(alert_id):
+        if not alert_id:
+            continue
+        if whale_alert_in_cooldown(alert_id, alerted_map, cooldown_h):
             continue
         alerts.append({
             "alert_id": alert_id,
-            "amount": round(interval_volume_delta, 0),
+            "amount": round(interval_traded, 0),
             "question": m.get("question") or "Unknown market",
             "current_probability": m.get("current_probability"),
             "liquidity": _safe_float(m.get("liquidity")),
             "slug": m.get("slug") or "",
         })
     alerts.sort(key=lambda x: x["amount"], reverse=True)
-    # Always refresh snapshot to represent the most recent 20-minute checkpoint.
     set_whale_volume_snapshot(current_snapshot)
     return alerts
 
