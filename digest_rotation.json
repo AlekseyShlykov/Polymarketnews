@@ -8,5 +8,15 @@
         "0x495e6b49e7397bb4e6f8ce69e246ccb33b744678bd9bf88cbecbd3a113b05423"
       ]
     }
+  },
+  "economy": {
+    "history": {
+      "2026-04-08": [
+        "0x940f01421649348b09dbf72bfd90788b9513ee56d9a0e7532c45ecda1ecfc6b4",
+        "0xfc6260666d020a912a87d9000eff5116d2adfb8c30aba543427a4c1f1411f1a0",
+        "0xced0cb8725bad43d78fda0cd0e5fa9e31804625cb3502b2c7897f8e8f7fa9e1f",
+        "0x742fec2bf8157b780b2cf6b188076b9bd830122e665c216bc0f1e2d77e21cd23"
+      ]
+    }
   }
 }
