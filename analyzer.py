@@ -557,6 +557,16 @@ def build_economy_event_spotlight(all_markets: list[dict]) -> dict | None:
     )
 
 
+def build_sports_event_spotlight(all_markets: list[dict]) -> dict | None:
+    """Sports digest: multi-outcome event with highest combined liquidity (e.g. NBA finalist brackets)."""
+    return _build_topic_event_spotlight(all_markets, TOPIC_SPORTS, market_include=None)
+
+
+def build_other_event_spotlight(all_markets: list[dict]) -> dict | None:
+    """Other / pop-culture digest: same multi-outcome block (e.g. GTA VI bundle markets)."""
+    return _build_topic_event_spotlight(all_markets, TOPIC_OTHER, market_include=None)
+
+
 def _is_recent_market(market: dict, window_hours: float) -> bool:
     created_ts = market.get("created_at_timestamp")
     if created_ts:
@@ -633,6 +643,10 @@ def build_topic_brief_data(
         event_spotlight = build_politics_event_spotlight(markets)
     elif topic == TOPIC_ECONOMY:
         event_spotlight = build_economy_event_spotlight(markets)
+    elif topic == TOPIC_SPORTS:
+        event_spotlight = build_sports_event_spotlight(markets)
+    elif topic == TOPIC_OTHER:
+        event_spotlight = build_other_event_spotlight(markets)
 
     spotlight_cids: set[str] = set()
     if isinstance(event_spotlight, dict):
