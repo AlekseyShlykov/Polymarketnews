@@ -522,16 +522,48 @@ def _build_topic_event_spotlight(
     if not best_ms:
         return None
 
-    ms_sorted = sorted(
-        best_ms,
-        key=lambda x: (str(x.get("end_date") or ""), str(x.get("question") or "")),
-    )
+    best_evid = str(best_ms[0].get("event_id") or "").strip()
+    relaxed_liq = float(getattr(config, "SPOTLIGHT_RELAXED_MIN_LIQUIDITY", 0.0))
+    relaxed_vol = float(getattr(config, "SPOTLIGHT_RELAXED_MIN_VOLUME_24H", 0.0))
+
+    by_cid: dict[str, dict] = {}
+    for m in all_markets:
+        if str(m.get("event_id") or "").strip() != best_evid:
+            continue
+        if topic is not None and classify_topic(m) != topic:
+            continue
+        if market_include is not None and not market_include(m):
+            continue
+        if m.get("current_probability") is None:
+            continue
+        liq = _safe_float(m.get("liquidity"))
+        vol24 = _safe_float(m.get("volume_24h") or m.get("volume"))
+        if liq < relaxed_liq or vol24 < relaxed_vol:
+            continue
+        cid = str(m.get("condition_id") or "").strip()
+        if not cid:
+            continue
+        by_cid[cid] = m
+
+    merged = list(by_cid.values())
+    if len(merged) < config.POLITICS_SPOTLIGHT_MIN_MARKETS:
+        return None
+
+    total_liq = sum(_safe_float(x.get("liquidity")) for x in merged)
     cap = config.POLITICS_SPOTLIGHT_MAX_LINES
+    ms_sorted = sorted(
+        merged,
+        key=lambda x: (
+            -_safe_float(x.get("current_probability")),
+            str(x.get("question") or ""),
+        ),
+    )
+    top_ms = ms_sorted[:cap]
     return {
-        "event_title": (ms_sorted[0].get("event_title") or "").strip() or "—",
-        "event_slug": (ms_sorted[0].get("slug") or "").strip(),
-        "total_liquidity": round(best_total_liq, 0),
-        "markets": ms_sorted[:cap],
+        "event_title": (top_ms[0].get("event_title") or "").strip() or "—",
+        "event_slug": (top_ms[0].get("slug") or "").strip(),
+        "total_liquidity": round(total_liq, 0),
+        "markets": top_ms,
     }
 
 

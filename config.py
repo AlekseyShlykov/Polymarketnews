@@ -65,9 +65,9 @@ IMPORTANCE_W_LIQUIDITY = 0.25
 IMPORTANCE_W_DELTA = 0.20
 IMPORTANCE_W_RECENCY = 0.10
 
-# Whale alerts (politics/economy use base threshold; sports/other need higher bar)
-WHALE_BET_USD_THRESHOLD = 100000.0
-WHALE_SPORTS_OTHER_USD_THRESHOLD = 300000.0
+# Whale alerts: min cumulative volume delta since last check (all topics).
+WHALE_BET_USD_THRESHOLD = 500000.0
+WHALE_SPORTS_OTHER_USD_THRESHOLD = 500000.0
 # Same market can alert again after this many hours (not a permanent block).
 WHALE_ALERT_COOLDOWN_HOURS = 24.0
 # Scan more markets for whales than for digests so hot politics/economy events are not missed.
@@ -77,6 +77,9 @@ WHALE_ALERTS_PATH = _ROOT / "whale_alerts.json"
 # Multi-outcome event spotlight (Politics + Economy digests; min sibling markets)
 POLITICS_SPOTLIGHT_MIN_MARKETS = 2
 POLITICS_SPOTLIGHT_MAX_LINES = 8
+# After the winning event is chosen, re-collect all its siblings with relaxed floors so thin outcomes still rank for top-8 display.
+SPOTLIGHT_RELAXED_MIN_LIQUIDITY = 0.0
+SPOTLIGHT_RELAXED_MIN_VOLUME_24H = 0.0
 # Looser than TOPIC_MIN_* so all siblings of a macro event can form a group (Gamma scan is capped).
 SPOTLIGHT_MIN_LIQUIDITY = 500.0
 SPOTLIGHT_MIN_VOLUME_24H = 800.0

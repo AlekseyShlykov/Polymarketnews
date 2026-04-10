@@ -411,7 +411,7 @@ def format_topic_brief(data: dict) -> str:
         slug_sp = (spotlight.get("event_slug") or "").strip()
         et_src = _clean_text(spotlight.get("event_title"))
         et_show = _clickable_question(q_map.get(et_src, et_src), slug_sp or None)
-        lines.append("Один сценарий — разные сроки:")
+        lines.append("Одно событие - разные вероятности:")
         lines.append(et_show)
         lines.append(f"Суммарная ликвидность по вариантам: {_fmt_usd(spotlight.get('total_liquidity'))}")
         lines.append("")
