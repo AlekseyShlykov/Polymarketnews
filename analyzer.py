@@ -93,11 +93,21 @@ _POLITICS_TAG_SLUGS = frozenset({
     "hormuz", "strait-of-hormuz", "red-sea", "bab-el-mandeb", "chokepoint", "maritime",
     "regime-change", "regime-collapse", "government-collapse", "iran-nuclear",
 })
+# Polymarket /economy hub + Gamma-style slugs (see https://polymarket.com/economy).
 _ECONOMY_TAG_SLUGS = frozenset({
-    "economy", "economic", "macro", "inflation", "recession", "fed", "interest-rates",
-    "finance", "crypto", "bitcoin", "ethereum", "stocks", "equities", "commodities",
-    "gdp", "employment", "jobs", "banking", "treasury", "yield", "rates", "forex",
-    "ipo", "earnings", "markets", "defi", "nft",
+    "economy", "economic", "macro", "inflation", "recession", "fed", "fed-rates", "fomc",
+    "interest-rates", "global-rates", "finance", "crypto", "bitcoin", "ethereum",
+    "stocks", "equities", "commodities", "commodity-markets", "gdp", "macro-indicators",
+    "employment", "jobs", "jobs-report", "nfp", "nonfarm", "banking", "treasury",
+    "treasuries", "yield", "yields", "rates", "forex", "fx", "ipo", "earnings",
+    "earnings-season", "markets", "defi", "nft", "trade-war", "tariffs", "tariff",
+    "taxes", "fiscal", "housing", "tsa", "monetary-policy", "central-bank", "central-banks",
+    "ecb", "boj", "boe", "bok", "banxico", "rbnz", "corporate-earnings",
+    "cpi", "pce", "core-pce", "unemployment", "payrolls", "powell", "dissent",
+    "bank-failure", "bank-failures", "largest-company", "market-cap", "energy-markets",
+    "natural-gas", "oil", "crude", "shipping", "logistics", "trade", "imports", "exports",
+    "sofr", "repo", "quantitative", "qt", "qe", "stimulus", "bailout", "default",
+    "china-economy", "us-economy", "eurozone", "japan-economy", "emerging-markets",
 })
 _SPORTS_TAG_SLUGS = frozenset({
     "sports", "sport", "soccer", "football", "nba", "nfl", "mlb", "nhl", "tennis",
@@ -114,7 +124,7 @@ _POLITICS_SUBSTR = (
     "referendum", "parliament", "congressional", "senate race", "presidential",
     "ukraine", "russia", "zelensky", "putin", "iran", "tehran", "israel", "palestine", "gaza",
     "middle east", "persian gulf", "arabian gulf", "strait of hormuz", "hormuz",
-    "bab el-mandeb", "red sea", "suez", "chokepoint", "south china sea", "taiwan strait",
+    "bab el-mandeb", "red sea", "chokepoint", "south china sea", "taiwan strait",
     "north korea", "ballistic",
     "crimea", "donbas", "humanitarian", "coup", "insurg", "terror", "border",
     "territory", "occupation", "peace deal", "two-state", "settlements", "hezbollah",
@@ -125,12 +135,32 @@ _POLITICS_SUBSTR = (
     "oust", "step down", "mobilization", "mobilisation", "martial law", "annexation",
     "recognition of", "breakaway", "separatist", "insurrection",
 )
+# Long / specific phrases first — matched before broad _POLITICS_SUBSTR where order matters.
+_ECONOMY_PRIORITY_SUBSTR = (
+    "strait of hormuz traffic", "hormuz traffic", "ships transit the strait", "ships transit",
+    "container ship", "suez canal", "transits of suez", "trade war", "tariff for",
+    "tariffs on", "fed decision", "fed meeting", "federal reserve", "fomc", "powell",
+    "rate cut", "rate hike", "rate cuts in", "bps decrease", "bps increase", "25 bps",
+    "50 bps", "dissent at the", "largest company", "2nd largest", "3rd largest company",
+    "third largest company", "second largest company", "bank of japan", "bank of england",
+    "bank of russia", "bank of mexico", "european central", "ecb ", "central bank",
+    "reserve bank of", "banxico", "treasury yield", "10-year", "10 year treasury",
+    "sofr ", "gdp growth", "china gdp", "us gdp", "us recession", "canada recession",
+    "bank failure", "banks will fail", "monthly inflation", "annual inflation",
+    "unemployment rate", "jobs added in", "payrolls", "crude oil reserves", "oil reserves",
+    "tsa passengers", "number of tsa", "egg", "dozen eggs", "ground beef", "sofr hit",
+    "fed rate", "interest rates:", "global rates", "macro indicator",
+)
 _ECONOMY_SUBSTR = (
     "economy", "macro", "inflation", "recession", "fed ", "federal reserve", "interest rate",
     "cpi ", "gdp", "jobs report", "nonfarm", "treasury", "yield curve", "banking",
     "finance", "crypto", "bitcoin", "ethereum", "stock", "equity", "commodit", "oil price",
     "natural gas", "gold price", "forex", "dollar index", "ipo", "earnings", "merger",
     "acquisition", "bankruptcy", "default", "bailout", "stimulus", "tariff", "trade war",
+    "housing", "mortgage", "refinance", "tax cut", "tax hike", "fiscal", "exports",
+    "imports", "trade deficit", "current account", "pmi ", "ism ", "retail sales",
+    "industrial production", "capacity utilization", "core pce", "pce ", "wage growth",
+    "labor market", "jolts", "initial claims", "continuing claims", "dot plot",
 )
 _SPORTS_SUBSTR = (
     "sport", "soccer", "football", "nba", "nfl", "mlb", "nhl", "tennis", "baseball",
@@ -143,11 +173,16 @@ _SPORTS_SUBSTR = (
 def classify_topic(market: dict) -> str:
     """
     Topic classification: explicit culture override, then tag hints, then substring heuristics.
+    Economy tag/category and macro-specific phrases run before broad geopolitics substrings
+    so Polymarket /economy markets (Fed, trade, shipping volumes, etc.) are not misclassified.
     """
     category = str(market.get("category") or "").lower()
     subcategory = str(market.get("subcategory") or "").lower()
     tags = [str(t).lower() for t in (market.get("tags") or [])]
-    haystack = " ".join([category, subcategory, " ".join(tags)])
+    q_low = str(market.get("question") or "").lower()
+    et_low = str(market.get("event_title") or "").lower()
+    slug_low = str(market.get("slug") or "").lower()
+    haystack = " ".join([category, subcategory, " ".join(tags), q_low, et_low, slug_low])
     tag_set = set(tags)
 
     other_override_tags = {"culture", "pop-culture", "music", "movies", "entertainment", "gta-vi", "celebrity", "awards"}
@@ -157,11 +192,18 @@ def classify_topic(market: dict) -> str:
 
     if tag_set.intersection(_POLITICS_TAG_SLUGS):
         return TOPIC_POLITICS
+
+    # Economy (hub tags, API category, Fed/GDP/tariffs/shipping — before broad _POLITICS_SUBSTR).
+    if tag_set.intersection(_ECONOMY_TAG_SLUGS):
+        return TOPIC_ECONOMY
+    if category in {"economy", "finance", "macro"} or subcategory in {"economy", "finance", "macro"}:
+        return TOPIC_ECONOMY
+    if any(s in haystack for s in _ECONOMY_PRIORITY_SUBSTR):
+        return TOPIC_ECONOMY
+
     if any(s in haystack for s in _POLITICS_SUBSTR):
         return TOPIC_POLITICS
 
-    if tag_set.intersection(_ECONOMY_TAG_SLUGS):
-        return TOPIC_ECONOMY
     if any(s in haystack for s in _ECONOMY_SUBSTR):
         return TOPIC_ECONOMY
 
@@ -226,6 +268,25 @@ _MACRO_ECONOMY_SPOTLIGHT_SUBSTR = (
     "unemployment rate",
     "treasury ",
     "yield curve",
+    "trade war",
+    "tariff",
+    "powell",
+    "ecb ",
+    "bank of japan",
+    "bank of england",
+    "rate cuts in",
+    "how many fed",
+    "strait of hormuz traffic",
+    "hormuz traffic",
+    "ships transit",
+    "suez canal",
+    "container ship",
+    "tsa ",
+    "bank failure",
+    "sofr ",
+    "10-year",
+    "china gdp",
+    "us gdp",
 )
 
 

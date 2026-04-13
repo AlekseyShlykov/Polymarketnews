@@ -2,6 +2,8 @@
 import pytest
 
 from analyzer import (
+    TOPIC_ECONOMY,
+    classify_topic,
     filter_and_rank,
     is_crypto_economy_market,
     macro_economy_spotlight_match,
@@ -127,6 +129,37 @@ def test_is_crypto_economy_market():
     assert is_crypto_economy_market({"question": "Will Bitcoin hit 100k?", "tags": []})
     assert is_crypto_economy_market({"question": "Fed rate cut", "tags": ["bitcoin"]})
     assert not is_crypto_economy_market({"question": "US recession by 2026?", "tags": ["economy"]})
+
+
+def test_classify_topic_economy_from_question_and_tags():
+    fed = {
+        "question": "Fed decision in April?",
+        "category": "",
+        "subcategory": "",
+        "tags": [],
+    }
+    assert classify_topic(fed) == TOPIC_ECONOMY
+    hormuz = {
+        "question": "Strait of Hormuz traffic returns to normal by end of April?",
+        "category": "",
+        "subcategory": "",
+        "tags": ["economy"],
+    }
+    assert classify_topic(hormuz) == TOPIC_ECONOMY
+    tagged = {
+        "question": "Random?",
+        "category": "",
+        "subcategory": "",
+        "tags": ["fed-rates", "macro-indicators"],
+    }
+    assert classify_topic(tagged) == TOPIC_ECONOMY
+    hormuz_q_only = {
+        "question": "Strait of Hormuz traffic returns to normal by end of April?",
+        "category": "",
+        "subcategory": "",
+        "tags": [],
+    }
+    assert classify_topic(hormuz_q_only) == TOPIC_ECONOMY
 
 
 def test_macro_economy_spotlight_match():
