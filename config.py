@@ -86,6 +86,12 @@ SPOTLIGHT_MIN_VOLUME_24H = 800.0
 
 # Economy digest: max crypto-related items in the top-4 (rest is macro/non-crypto economy)
 ECONOMY_DIGEST_MAX_CRYPTO = 2
+# Wider Gamma scan so Fed / largest-company style events (and spotlight siblings) appear in the batch.
+ECONOMY_DIGEST_MAX_MARKETS_TO_SCAN = 500
+# Slightly looser repeat-from-yesterday cap for economy so rotation does not leave a 2-item crypto-only digest.
+ECONOMY_DIGEST_MAX_REPEAT_PREVIOUS_DAY = 2
+# Added to normalized importance score for non-crypto economy rows (topic=economy only).
+ECONOMY_MACRO_IMPORTANCE_BOOST = 0.35
 
 # Gemini
 GEMINI_MODEL = "gemini-2.5-flash-lite"

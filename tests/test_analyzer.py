@@ -129,6 +129,12 @@ def test_is_crypto_economy_market():
     assert is_crypto_economy_market({"question": "Will Bitcoin hit 100k?", "tags": []})
     assert is_crypto_economy_market({"question": "Fed rate cut", "tags": ["bitcoin"]})
     assert not is_crypto_economy_market({"question": "US recession by 2026?", "tags": ["economy"]})
+    assert is_crypto_economy_market(
+        {"question": "MegaETH (FDV) >$1B one day after launch?", "tags": ["economy"], "event_title": ""}
+    )
+    assert is_crypto_economy_market(
+        {"question": "IPO Kraken by December 31, 2026?", "tags": ["finance"], "event_title": ""}
+    )
 
 
 def test_classify_topic_economy_from_question_and_tags():

@@ -220,7 +220,7 @@ _CRYPTO_TAG_SLUGS = frozenset({
     "crypto", "bitcoin", "ethereum", "defi", "nft", "solana", "altcoin", "dogecoin",
     "chainlink", "polygon", "matic", "avalanche", "cardano", "xrp", "ripple",
     "microstrategy", "coinbase", "bitcoin-etf", "spot-bitcoin", "memecoin",
-    "web3", "layer-2", "layer2", "stablecoin", "cbdc",
+    "web3", "layer-2", "layer2", "stablecoin", "cbdc", "fdv", "token-sale", "ico",
 })
 _CRYPTO_SUBSTR = (
     "bitcoin", "btc ", " btc", "ethereum", "eth ", " ether", "solana", "defi",
@@ -228,6 +228,8 @@ _CRYPTO_SUBSTR = (
     "microstrategy", "coinbase", " grayscale", "spot etf", "bitcoin etf",
     "layer 2", "layer-2", "altcoin", "memecoin", "proof-of-stake", "proof of stake",
     "satoshi", "halving", "on-chain", "defi ", "yield farm",
+    "fdv", "megaeth", "mega eth", "kraken", "kraken ipo", "ipo kraken", "token launch", "airdrop",
+    "coinbase ipo", "crypto ipo", "exchange ipo",
 )
 
 
@@ -238,9 +240,10 @@ def is_crypto_economy_market(market: dict) -> bool:
     if tag_set.intersection(_CRYPTO_TAG_SLUGS):
         return True
     q = str(market.get("question") or "").lower()
+    et = str(market.get("event_title") or "").lower()
     cat = str(market.get("category") or "").lower()
     sub = str(market.get("subcategory") or "").lower()
-    hay = " ".join([cat, sub, " ".join(tags), q])
+    hay = " ".join([cat, sub, " ".join(tags), q, et])
     return any(s in hay for s in _CRYPTO_SUBSTR)
 
 
@@ -465,11 +468,23 @@ def select_economy_digest_markets(
         return []
     exclude = {str(x) for x in (exclude_condition_ids or set()) if x}
     prev_ids = {str(x) for x in (prev_ids or set()) if x}
-    max_rep = int(getattr(config, "TOPIC_DIGEST_MAX_REPEAT_PREVIOUS_DAY", 1))
+    max_rep = int(
+        getattr(
+            config,
+            "ECONOMY_DIGEST_MAX_REPEAT_PREVIOUS_DAY",
+            getattr(config, "TOPIC_DIGEST_MAX_REPEAT_PREVIOUS_DAY", 1),
+        )
+    )
     max_crypto = int(getattr(config, "ECONOMY_DIGEST_MAX_CRYPTO", 2))
 
     def cid(x: dict) -> str:
         return str(x.get("condition_id") or "")
+
+    # Prefer macro (non-crypto) candidates first so rotation does not exhaust on crypto at the top.
+    rft = list(ranked_for_top)
+    non_c = [m for m in rft if not is_crypto_economy_market(m)]
+    cry = [m for m in rft if is_crypto_economy_market(m)]
+    ranked_for_top = non_c + cry
 
     selected: list[dict] = []
 
@@ -485,6 +500,18 @@ def select_economy_digest_markets(
             break
         if not added:
             break
+
+    # If rotation blocked all macro picks, still take top non-crypto rows for slots 1–2.
+    if len(selected) < 2:
+        for m in ranked_for_top:
+            if len(selected) >= 2 or len(selected) >= count:
+                break
+            if is_crypto_economy_market(m):
+                continue
+            c = cid(m)
+            if not c or c in exclude or c in {cid(x) for x in selected}:
+                continue
+            selected.append(m)
 
     while len(selected) < count:
         added = False
@@ -679,7 +706,13 @@ def build_topic_brief_data(
     """
     Build structured payload for one topic over last 24h.
     """
-    markets = fetch_all_markets(max_markets or config.MAX_MARKETS_TO_SCAN)
+    if max_markets is not None:
+        fetch_n = max_markets
+    elif topic == TOPIC_ECONOMY:
+        fetch_n = int(getattr(config, "ECONOMY_DIGEST_MAX_MARKETS_TO_SCAN", config.MAX_MARKETS_TO_SCAN))
+    else:
+        fetch_n = config.MAX_MARKETS_TO_SCAN
+    markets = fetch_all_markets(fetch_n)
     topic_rows = []
     for m in markets:
         if classify_topic(m) != topic:
@@ -725,6 +758,8 @@ def build_topic_brief_data(
             + config.IMPORTANCE_W_DELTA * n_delta
             + config.IMPORTANCE_W_RECENCY * recency
         )
+        if topic == TOPIC_ECONOMY and not is_crypto_economy_market(m):
+            score += float(getattr(config, "ECONOMY_MACRO_IMPORTANCE_BOOST", 0.35))
         m["importance_score"] = round(score, 4)
 
     ranked = sorted(topic_rows, key=lambda x: x.get("importance_score", 0), reverse=True)
