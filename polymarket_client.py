@@ -92,9 +92,19 @@ def _extract_tag_tokens(raw_tags: Any) -> list[str]:
     return norm
 
 
-def fetch_events(limit: int = 150) -> list[dict]:
-    """Fetch active, non-closed events from Gamma."""
-    url = f"{config.POLYMARKET_GAMMA_URL}/events?limit={limit}&active=true&closed=false"
+def fetch_events(
+    limit: int = 150,
+    *,
+    order: str | None = None,
+    ascending: bool | None = None,
+) -> list[dict]:
+    """Fetch active, non-closed events from Gamma. Optional ``order`` (e.g. volume24hr) for ranking."""
+    parts = [f"limit={limit}", "active=true", "closed=false"]
+    if order:
+        parts.append(f"order={order}")
+    if ascending is not None:
+        parts.append("ascending=true" if ascending else "ascending=false")
+    url = f"{config.POLYMARKET_GAMMA_URL}/events?" + "&".join(parts)
     try:
         r = requests.get(url, timeout=config.REQUEST_TIMEOUT_SECONDS)
         r.raise_for_status()
@@ -212,10 +222,15 @@ def event_to_markets(event: dict) -> list[dict]:
     return out
 
 
-def fetch_all_markets(max_markets: int | None = None) -> list[dict]:
+def fetch_all_markets(
+    max_markets: int | None = None,
+    *,
+    events_order: str | None = None,
+) -> list[dict]:
     """Fetch events and flatten to list of market dicts with price and 24h change."""
     limit = max_markets or config.MAX_MARKETS_TO_SCAN
-    events = fetch_events(limit=limit)
+    asc = False if events_order else None
+    events = fetch_events(limit=limit, order=events_order, ascending=asc)
     result = []
     seen = set()
     for ev in events:

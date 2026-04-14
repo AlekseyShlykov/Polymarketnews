@@ -88,10 +88,14 @@ SPOTLIGHT_MIN_VOLUME_24H = 800.0
 ECONOMY_DIGEST_MAX_CRYPTO = 2
 # Wider Gamma scan so Fed / largest-company style events (and spotlight siblings) appear in the batch.
 ECONOMY_DIGEST_MAX_MARKETS_TO_SCAN = 500
+# Order Gamma /events by 24h volume so high-liquidity macro markets are not buried in default ordering.
+ECONOMY_GAMMA_EVENTS_ORDER = "volume24hr"
 # Slightly looser repeat-from-yesterday cap for economy so rotation does not leave a 2-item crypto-only digest.
 ECONOMY_DIGEST_MAX_REPEAT_PREVIOUS_DAY = 2
 # Added to normalized importance score for non-crypto economy rows (topic=economy only).
 ECONOMY_MACRO_IMPORTANCE_BOOST = 0.35
+# Subtracted for crypto-heavy rows so BTC price ladders do not crowd out Fed/GDP-style markets.
+ECONOMY_CRYPTO_SCORE_PENALTY = 0.55
 
 # Gemini
 GEMINI_MODEL = "gemini-2.5-flash-lite"

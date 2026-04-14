@@ -687,6 +687,20 @@ def build_other_event_spotlight(all_markets: list[dict]) -> dict | None:
     return _build_topic_event_spotlight(all_markets, TOPIC_OTHER, market_include=None)
 
 
+def _economy_digest_include_market(m: dict) -> bool:
+    """
+    Economy digest rows: default economy topic, plus macro headlines (Fed, GDP, …) even when
+    Gamma tags them as politics/other. Sports stay out. Pure-politics without macro strings
+    still excluded because macro_economy_spotlight_match is false.
+    """
+    tpc = classify_topic(m)
+    if tpc == TOPIC_ECONOMY:
+        return True
+    if tpc == TOPIC_SPORTS:
+        return False
+    return bool(macro_economy_spotlight_match(m) and not is_crypto_economy_market(m))
+
+
 def _is_recent_market(market: dict, window_hours: float) -> bool:
     created_ts = market.get("created_at_timestamp")
     if created_ts:
@@ -712,10 +726,17 @@ def build_topic_brief_data(
         fetch_n = int(getattr(config, "ECONOMY_DIGEST_MAX_MARKETS_TO_SCAN", config.MAX_MARKETS_TO_SCAN))
     else:
         fetch_n = config.MAX_MARKETS_TO_SCAN
-    markets = fetch_all_markets(fetch_n)
+    if topic == TOPIC_ECONOMY:
+        ev_order = str(getattr(config, "ECONOMY_GAMMA_EVENTS_ORDER", "") or "").strip() or None
+        markets = fetch_all_markets(fetch_n, events_order=ev_order)
+    else:
+        markets = fetch_all_markets(fetch_n)
     topic_rows = []
     for m in markets:
-        if classify_topic(m) != topic:
+        if topic == TOPIC_ECONOMY:
+            if not _economy_digest_include_market(m):
+                continue
+        elif classify_topic(m) != topic:
             continue
         if window_hours and window_hours > 0 and not _is_recent_market(m, window_hours):
             continue
@@ -739,7 +760,10 @@ def build_topic_brief_data(
 
     if not topic_rows:
         # still return compact fallback built from strongest available by liquidity.
-        alt = [m for m in markets if classify_topic(m) == topic]
+        if topic == TOPIC_ECONOMY:
+            alt = [m for m in markets if _economy_digest_include_market(m)]
+        else:
+            alt = [m for m in markets if classify_topic(m) == topic]
         alt.sort(key=lambda r: (_safe_float(r.get("volume_24h") or r.get("volume")), _safe_float(r.get("liquidity"))), reverse=True)
         topic_rows = [{**m, "liquidity": _safe_float(m.get("liquidity")), "volume_24h": _safe_float(m.get("volume_24h") or m.get("volume"))} for m in alt[: max(4, config.TOPIC_TOP_MARKETS)]]
 
@@ -758,8 +782,11 @@ def build_topic_brief_data(
             + config.IMPORTANCE_W_DELTA * n_delta
             + config.IMPORTANCE_W_RECENCY * recency
         )
-        if topic == TOPIC_ECONOMY and not is_crypto_economy_market(m):
-            score += float(getattr(config, "ECONOMY_MACRO_IMPORTANCE_BOOST", 0.35))
+        if topic == TOPIC_ECONOMY:
+            if is_crypto_economy_market(m):
+                score -= float(getattr(config, "ECONOMY_CRYPTO_SCORE_PENALTY", 0.55))
+            else:
+                score += float(getattr(config, "ECONOMY_MACRO_IMPORTANCE_BOOST", 0.35))
         m["importance_score"] = round(score, 4)
 
     ranked = sorted(topic_rows, key=lambda x: x.get("importance_score", 0), reverse=True)
@@ -767,39 +794,62 @@ def build_topic_brief_data(
     use_rotation = not (window_hours and window_hours > 0)
     prev_ids = get_yesterday_digest_condition_ids(topic) if use_rotation else set()
     event_spotlight = None
-    if topic == TOPIC_POLITICS:
-        event_spotlight = build_politics_event_spotlight(markets)
-    elif topic == TOPIC_ECONOMY:
-        event_spotlight = build_economy_event_spotlight(markets)
-    elif topic == TOPIC_SPORTS:
-        event_spotlight = build_sports_event_spotlight(markets)
-    elif topic == TOPIC_OTHER:
-        event_spotlight = build_other_event_spotlight(markets)
+    top_n: list[dict] = []
 
-    spotlight_cids: set[str] = set()
-    if isinstance(event_spotlight, dict):
-        for sm in event_spotlight.get("markets") or []:
-            sc = str(sm.get("condition_id") or "").strip()
-            if sc:
-                spotlight_cids.add(sc)
-    ranked_for_top = [m for m in ranked if str(m.get("condition_id") or "").strip() not in spotlight_cids]
-    if use_rotation:
-        if topic == TOPIC_ECONOMY:
+    if topic == TOPIC_ECONOMY:
+        # Pick top-N first, then spotlight from the rest. Otherwise Fed siblings (spotlight)
+        # are all excluded from the pool and only unrelated crypto ladders remain for slots 1–4.
+        ranked_for_top = list(ranked)
+        if use_rotation:
             top_n = select_economy_digest_markets(
                 ranked_for_top,
                 prev_ids,
                 config.TOPIC_TOP_MARKETS,
-                exclude_condition_ids=spotlight_cids,
+                exclude_condition_ids=set(),
             )
         else:
+            top_n = ranked_for_top[: config.TOPIC_TOP_MARKETS]
+        top_cids = {str(m.get("condition_id") or "").strip() for m in top_n if m.get("condition_id")}
+        event_spotlight = build_economy_event_spotlight(markets)
+        if isinstance(event_spotlight, dict):
+            sms = event_spotlight.get("markets") or []
+            trimmed = [sm for sm in sms if str(sm.get("condition_id") or "").strip() not in top_cids]
+            if len(trimmed) >= config.POLITICS_SPOTLIGHT_MIN_MARKETS:
+                tliq = sum(_safe_float(x.get("liquidity")) for x in trimmed)
+                event_spotlight = {
+                    **event_spotlight,
+                    "markets": trimmed,
+                    "total_liquidity": round(tliq, 0),
+                }
+            elif len(sms) >= config.POLITICS_SPOTLIGHT_MIN_MARKETS:
+                # Top already uses some Fed outcomes; still show full multi-outcome block (overlap OK).
+                pass
+            else:
+                event_spotlight = None
+    else:
+        if topic == TOPIC_POLITICS:
+            event_spotlight = build_politics_event_spotlight(markets)
+        elif topic == TOPIC_SPORTS:
+            event_spotlight = build_sports_event_spotlight(markets)
+        elif topic == TOPIC_OTHER:
+            event_spotlight = build_other_event_spotlight(markets)
+
+        spotlight_cids: set[str] = set()
+        if isinstance(event_spotlight, dict):
+            for sm in event_spotlight.get("markets") or []:
+                sc = str(sm.get("condition_id") or "").strip()
+                if sc:
+                    spotlight_cids.add(sc)
+        ranked_for_top = [m for m in ranked if str(m.get("condition_id") or "").strip() not in spotlight_cids]
+        if use_rotation:
             top_n = select_digest_markets(
                 ranked_for_top,
                 prev_ids,
                 config.TOPIC_TOP_MARKETS,
                 exclude_condition_ids=spotlight_cids,
             )
-    else:
-        top_n = ranked_for_top[: config.TOPIC_TOP_MARKETS]
+        else:
+            top_n = ranked_for_top[: config.TOPIC_TOP_MARKETS]
 
     biggest_move = max(ranked, key=lambda x: abs(_safe_float(x.get("delta_24h"))), default=None)
     most_active = max(ranked, key=lambda x: _safe_float(x.get("volume_24h")), default=None)
