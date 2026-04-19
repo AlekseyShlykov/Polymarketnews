@@ -29,6 +29,7 @@
   },
   "economy": {
     "history": {
+      "2026-04-19": [],
       "2026-04-18": [
         "0x924a2942747dd75703321a7c8d809c68f6a514c3b0f2a2e64274e02310634669",
         "0xd4d00e5bf8b960cc37c74c1ec19e41e00b0706add203ddcfbb65ad006c5c223a",
@@ -44,12 +45,6 @@
       "2026-04-16": [
         "0xd4d00e5bf8b960cc37c74c1ec19e41e00b0706add203ddcfbb65ad006c5c223a",
         "0x36e8ca24d2a13435f519f15580d42b45cdbe3bc425fb39a7c2733260357af0fa"
-      ],
-      "2026-04-15": [
-        "0xd72622d154dfe65b9c019d6afcfe75a55717e5c502db611f555b101aafbf6ec5",
-        "0x5a6c4378df2112cca4ecd59cb092504bafdaf323714dd73521bce5b3613bcf4e",
-        "0xd4d00e5bf8b960cc37c74c1ec19e41e00b0706add203ddcfbb65ad006c5c223a",
-        "0x35d8c42a467d4e485ffba50c5d2d984ed0793f4935319ca923b494798051c8ef"
       ]
     }
   },
