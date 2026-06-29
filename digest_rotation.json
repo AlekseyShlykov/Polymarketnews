@@ -54,6 +54,12 @@
   },
   "sports": {
     "history": {
+      "2026-06-29": [
+        "0x67443cb1ffb2bf180f7df5b6ca7adff63f7e8e933c7e41405ba118f3e9f8befb",
+        "0xbce6698c9a61376c0709a2a724a9cf0dd0236d8dea882533073b6bb062efbee0",
+        "0x0189df05ed7bf84d799213b01a79571e305c03b2ac5359cfbb3a323448ba20fa",
+        "0xcdb1f0400949238a63d3e88243d2ada08cd9c2a71985ced9f0cfd5e66354cf90"
+      ],
       "2026-06-28": [
         "0x5a59d269c2b5108cd2f64c624e46ee2c8b5cfd88b882582565f927918315b6aa",
         "0x67443cb1ffb2bf180f7df5b6ca7adff63f7e8e933c7e41405ba118f3e9f8befb",
@@ -71,12 +77,6 @@
         "0x675bba4df50fd123f7fbfbafa67e9b75f4092d85ce0f9148ce78fc945964c856",
         "0x65307f30dce84ac35e41813035d3c04933da830dc4efbbb2fcdc4b282700ef3b",
         "0x0189df05ed7bf84d799213b01a79571e305c03b2ac5359cfbb3a323448ba20fa"
-      ],
-      "2026-06-25": [
-        "0xbce6698c9a61376c0709a2a724a9cf0dd0236d8dea882533073b6bb062efbee0",
-        "0x65307f30dce84ac35e41813035d3c04933da830dc4efbbb2fcdc4b282700ef3b",
-        "0x67443cb1ffb2bf180f7df5b6ca7adff63f7e8e933c7e41405ba118f3e9f8befb",
-        "0x3a26ca6425e2d98f14935670bc22cdb0744defc6f6d83c65f8c413a921c5c70c"
       ]
     }
   },
