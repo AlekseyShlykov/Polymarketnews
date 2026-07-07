@@ -56,6 +56,7 @@
   },
   "sports": {
     "history": {
+      "2026-07-07": [],
       "2026-07-06": [
         "0x3a26ca6425e2d98f14935670bc22cdb0744defc6f6d83c65f8c413a921c5c70c"
       ],
@@ -68,12 +69,6 @@
         "0x675bba4df50fd123f7fbfbafa67e9b75f4092d85ce0f9148ce78fc945964c856",
         "0x32cfa52198e85e070d1b17d1b53c5c3a6aaae7736cdc33fa6aa04d353f0c2811",
         "0x7b52405ad0e0d31bfe970940b67d77f24ecedeab8a2361c11148c02a006e325c"
-      ],
-      "2026-07-03": [
-        "0x3a26ca6425e2d98f14935670bc22cdb0744defc6f6d83c65f8c413a921c5c70c",
-        "0xcdb1f0400949238a63d3e88243d2ada08cd9c2a71985ced9f0cfd5e66354cf90",
-        "0x37a6de1b21803e5f3fb1965116218215d79963af4f7e51659696366267a63a03",
-        "0x32cfa52198e85e070d1b17d1b53c5c3a6aaae7736cdc33fa6aa04d353f0c2811"
       ]
     }
   },
