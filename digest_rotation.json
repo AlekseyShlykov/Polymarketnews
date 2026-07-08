@@ -69,19 +69,18 @@
   },
   "other": {
     "history": {
+      "2026-07-08": [
+        "0x3d495a3e05eaffe438bb1c2ab97ed57a79b0a6ab18a2ca6fa5b448e20ce70082",
+        "0xe2b48e3b44de9658ee9c8b37354301763e33c0b502fd966839d644b4c0a9dea8",
+        "0x3209617364a0d598435806b59d0d056b606022dc9028c466ad7912df94fc170c"
+      ],
       "2026-07-07": [
         "0xdee5db5410b362783a1405b66b9aa08a7d050ae1f99e8da85b9d1ae7962dad3b"
       ],
       "2026-07-06": [
         "0xf53d2cf86bf4ea3c6a0bfb739cc0dded28001dde6eee5f90b8bb6716ce33571a"
       ],
-      "2026-07-05": [],
-      "2026-07-04": [
-        "0xdee5db5410b362783a1405b66b9aa08a7d050ae1f99e8da85b9d1ae7962dad3b",
-        "0x2499928ffbe6022444543dcd940075259cecb5e41e346284b578cb64e1404d32",
-        "0xf53d2cf86bf4ea3c6a0bfb739cc0dded28001dde6eee5f90b8bb6716ce33571a",
-        "0x3d495a3e05eaffe438bb1c2ab97ed57a79b0a6ab18a2ca6fa5b448e20ce70082"
-      ]
+      "2026-07-05": []
     }
   }
 }
