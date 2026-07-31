@@ -1,6 +1,12 @@
 {
   "politics": {
     "history": {
+      "2026-07-31": [
+        "0x6685b25cc7c89032efcdf81eb27fdc6bbf04a3e4299bcd99c9f3d62c8471001e",
+        "0x88d67705780a3d922317ecb0c78a947a306174d0510df2ae89394d5abfb28206",
+        "0x1945a8b23e313ed7423b6b6fd556f9ab5578900376b565a61dc480a5f4f35d21",
+        "0xcb239105ed21a2420ba4d85090b9bc32755c56601ffdc528afd17fd6282fe930"
+      ],
       "2026-07-30": [
         "0x3cd6e52603d80ddbbdac9b1a4d43f9b7faa6aae4fae4d0fdfad3bd58454da7d3",
         "0x8b203037c7c0e21b500314f8398d2a8ea294b7ce1f4f9185f426425a3505bc45",
@@ -18,12 +24,6 @@
         "0x3cd6e52603d80ddbbdac9b1a4d43f9b7faa6aae4fae4d0fdfad3bd58454da7d3",
         "0x65dba70f1ce2e78bdc1c82ae6325d32b2ffbe2fe0eaec0e39e70c3dadfa44f94",
         "0xe883f2fda25a605a184bb5fe583afce6cc21ea0b348b6a3728ec3067553c548d"
-      ],
-      "2026-07-27": [
-        "0x61d9486c0f7e14ed98f3b177b6adcb3cd45646c92e8bbfbf209789b86472d4b6",
-        "0x7e50b661a2bedc670bcf32fc9ece12616f6fc4fba5dbe8526292bf3447374009",
-        "0x36db77c539bcc8c7bf0686c1b99f30c5a5eed1f53d3b3a27a071550c81f83701",
-        "0xa467b14d51f01b957109d9cbb1d6c124fab2a089d52ed8f471d23c2812e743b7"
       ]
     }
   },
