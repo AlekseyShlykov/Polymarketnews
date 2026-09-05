@@ -65,6 +65,11 @@
   },
   "other": {
     "history": {
+      "2026-09-05": [
+        "0xf1fa8b7530ceec866131fbc6681209e39d6b448bdca563b46d936cc792e6cf7a",
+        "0xb7f535311eed765630d1070acf8a8e646e70c0eaf32c348fcb0472150c70d0e7",
+        "0x0803b42cec5723f301f77f3ea818fcb393eb58b9694096cab2d4f8b81b4a2bdf"
+      ],
       "2026-09-04": [
         "0xb7f535311eed765630d1070acf8a8e646e70c0eaf32c348fcb0472150c70d0e7",
         "0xf1fa8b7530ceec866131fbc6681209e39d6b448bdca563b46d936cc792e6cf7a",
@@ -75,10 +80,7 @@
         "0xb7f535311eed765630d1070acf8a8e646e70c0eaf32c348fcb0472150c70d0e7",
         "0x0803b42cec5723f301f77f3ea818fcb393eb58b9694096cab2d4f8b81b4a2bdf"
       ],
-      "2026-09-02": [],
-      "2026-09-01": [
-        "0x0803b42cec5723f301f77f3ea818fcb393eb58b9694096cab2d4f8b81b4a2bdf"
-      ]
+      "2026-09-02": []
     }
   }
 }
