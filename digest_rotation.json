@@ -29,6 +29,10 @@
   },
   "economy": {
     "history": {
+      "2026-10-01": [
+        "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
+        "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b"
+      ],
       "2026-09-30": [
         "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
         "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b",
@@ -46,8 +50,7 @@
         "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
         "0xbeb1d04b222dc8208cb95182ba74eb736243d8b116166ff10c9b54326160e7ac",
         "0x3bd9947ca15c9b519284b1ee786d337c06bcaff13d6b8e5ccb858490faf6a071"
-      ],
-      "2026-09-27": []
+      ]
     }
   },
   "sports": {
