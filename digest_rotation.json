@@ -29,6 +29,12 @@
   },
   "economy": {
     "history": {
+      "2026-10-07": [
+        "0x9cf563d7b55aa9aa876d5d7e55126347eee473f0ae56d799e325fdef2bf25297",
+        "0xde5d75ab7702875623ba509bc923241e1211da74a113521b3b70ddac930d7316",
+        "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b",
+        "0x15459ef555545e26a1abe7c5ebf752a9eca7ca6a06afd957b7c2b9c243fb1962"
+      ],
       "2026-10-06": [
         "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
         "0xde5d75ab7702875623ba509bc923241e1211da74a113521b3b70ddac930d7316",
@@ -41,13 +47,7 @@
         "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b",
         "0x9c112394cb10a937fac9708860e53ce8b57742cf90c0b5ecb73f049edc5c31a4"
       ],
-      "2026-10-04": [],
-      "2026-10-03": [
-        "0xce9b2f9403eb423f7720f1b822c3f3577e27333f89022d7e79c541ab461ff237",
-        "0xdf9bf27ee5757c55b44b8b9826ddc9ec3a8809aa3278634c45edbb7fc8f1a3e3",
-        "0x12aa13b3da17ceae1b0a59b5d5b77121e91bb79b4bb0b52bf6543ed3f8d0953b",
-        "0x454a84498fa38164b2bea23373c5e6a1d8a1f476187f0fa6a33b9f0ceb246206"
-      ]
+      "2026-10-04": []
     }
   },
   "sports": {
